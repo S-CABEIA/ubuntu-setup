@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Pagamento - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #003A5A; /* Azul Cisco mais escuro */
+            --secondary-color: #00507A; /* Azul secundário Cisco mais escuro */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #3A7A3A; /* Verde Cisco mais escuro */
+            --warning-color: #D99000; /* Amarelo Cisco mais escuro */
+            --danger-color: #C01A15; /* Vermelho Cisco mais escuro */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        /* Course Card */
+        .course-card {
+            border-radius: 10px;
+            overflow: hidden;
+            height: 100%;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .course-image {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .course-badge.pending {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .course-badge.approved {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .course-badge.rejected {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .course-content {
+            padding: 20px;
+        }
+        
+        .course-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        /* File Upload */
+        .file-upload-container {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background-color: var(--bg-light);
+        }
+        
+        .file-upload-container:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-text {
+            margin-bottom: 15px;
+            color: var(--light-text);
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .file-preview {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .file-preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .file-preview-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .file-preview-size {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        /* Payment History */
+        .payment-history-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .payment-history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-history-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .payment-history-date {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            margin-bottom: 5px;
+        }
+        
+        .payment-history-course {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .payment-history-amount {
+            font-weight: 600;
+        }
+        
+        .payment-history-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .payment-history-status.pending {
+            background-color: rgba(217, 144, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .payment-history-status.approved {
+            background-color: rgba(58, 122, 58, 0.1);
+            color: var(--success-color);
+        }
+        
+        .payment-history-status.rejected {
+            background-color: rgba(192, 26, 21, 0.1);
+            color: var(--danger-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1000;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formando</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Aprendizagem</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="formando-dashboard.html" class="nav-link">
+                        <i class="bi bi-collection"></i> <span>Recursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-dots"></i> <span>Chat</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-graph-up"></i> <span>Desempenho</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-award"></i> <span>Certificados</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Financeiro</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="pagamento-upload.html" class="nav-link active">
+                        <i class="bi bi-credit-card"></i> <span>Pagamentos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-receipt"></i> <span>Faturas</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conta</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-person"></i> <span>Meu Perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header mb-4">
+            <button class="btn btn-link text-dark d-md-none me-3" id="toggle-sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="flex-grow-1">
+                <h5 class="mb-0">Pagamentos</h5>
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/32" alt="User" class="rounded-circle me-2">
+                    <span>João Silva</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Perfil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content -->
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Cursos Pendentes de Pagamento -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Cursos Pendentes de Pagamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="course-card">
+                                        <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=JavaScript')">
+                                            <span class="course-badge pending">Pagamento Pendente</span>
+                                        </div>
+                                        <div class="course-content">
+                                            <h5 class="course-title">Introdução ao JavaScript</h5>
+                                            <p class="text-muted">Instrutor: Carlos Oliveira</p>
+                                            <p><strong>Valor:</strong> R$ 450,00</p>
+                                            <p><strong>Vencimento:</strong> 20/03/2025</p>
+                                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal" data-course="Introdução ao JavaScript" data-amount="450,00">
+                                                <i class="bi bi-upload me-2"></i>Enviar Comprovativo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="course-card">
+                                        <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=React')">
+                                            <span class="course-badge pending">Pagamento Pendente</span>
+                                        </div>
+                                        <div class="course-content">
+                                            <h5 class="course-title">React: Desenvolvimento Frontend</h5>
+                                            <p class="text-muted">Instrutor: Carlos Oliveira</p>
+                                            <p><strong>Valor:</strong> R$ 550,00</p>
+                                            <p><strong>Vencimento:</strong> 25/03/2025</p>
+                                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal" data-course="React: Desenvolvimento Frontend" data-amount="550,00">
+                                                <i class="bi bi-upload me-2"></i>Enviar Comprovativo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagamentos em Análise -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Pagamentos em Análise</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="course-card">
+                                        <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=Python')">
+                                            <span class="course-badge pending">Em Análise</span>
+                                        </div>
+                                        <div class="course-content">
+                                            <h5 class="course-title">Python para Data Science</h5>
+                                            <p class="text-muted">Instrutor: Mariana Costa</p>
+                                            <p><strong>Valor:</strong> R$ 500,00</p>
+                                            <p><strong>Enviado em:</strong> 10/03/2025</p>
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-info-circle me-2"></i>Seu pagamento está sendo analisado pela administração.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cursos Liberados -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Cursos com Acesso Liberado</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="course-card">
+                                        <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=HTML+CSS')">
+                                            <span class="course-badge approved">Pagamento Aprovado</span>
+                                        </div>
+                                        <div class="course-content">
+                                            <h5 class="course-title">HTML & CSS Básico</h5>
+                                            <p class="text-muted">Instrutor: Ana Silva</p>
+                                            <p><strong>Valor:</strong> R$ 350,00</p>
+                                            <p><strong>Aprovado em:</strong> 01/03/2025</p>
+                                            <a href="curso-materiais.html" class="btn btn-success w-100">
+                                                <i class="bi bi-play-fill me-2"></i>Acessar Curso
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Informações de Pagamento -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Informações de Pagamento</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">Dados Bancários para Transferência</h6>
+                            <p><strong>Banco:</strong> Banco Nacional de Angola</p>
+                            <p><strong>Agência:</strong> 0001</p>
+                            <p><strong>Conta:</strong> 12345-6</p>
+                            <p><strong>Titular:</strong> Ubuntu Formação Profissional</p>
+                            <p><strong>IBAN:</strong> AO06000600000100037131174</p>
+                            <hr>
+                            <h6 class="mb-3">Instruções</h6>
+                            <ol>
+                                <li>Realize o pagamento para a conta acima.</li>
+                                <li>Guarde o comprovativo de pagamento (recibo, screenshot).</li>
+                                <li>Envie o comprovativo através do botão "Enviar Comprovativo".</li>
+                                <li>Você receberá um email de confirmação do envio.</li>
+                                <li>Aguarde a confirmação da administração (até 48h úteis).</li>
+                                <li>Após aprovação, você receberá um email de confirmação e o acesso ao curso será liberado automaticamente.</li>
+                            </ol>
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle me-2"></i>Em caso de dúvidas, entre em contato com o suporte financeiro: financeiro@ubuntu.edu
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Histórico de Pagamentos -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Histórico de Pagamentos</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="payment-history-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="payment-history-date">10/03/2025</p>
+                                        <h6 class="payment-history-course">Python para Data Science</h6>
+                                        <p class="payment-history-amount">R$ 500,00</p>
+                                    </div>
+                                    <span class="payment-history-status pending">Em Análise</span>
+                                </div>
+                            </div>
+                            <div class="payment-history-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="payment-history-date">01/03/2025</p>
+                                        <h6 class="payment-history-course">HTML & CSS Básico</h6>
+                                        <p class="payment-history-amount">R$ 350,00</p>
+                                    </div>
+                                    <span class="payment-history-status approved">Aprovado</span>
+                                </div>
+                            </div>
+                            <div class="payment-history-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="payment-history-date">15/02/2025</p>
+                                        <h6 class="payment-history-course">UX/UI Design</h6>
+                                        <p class="payment-history-amount">R$ 450,00</p>
+                                    </div>
+                                    <span class="payment-history-status rejected">Rejeitado</span>
+                                </div>
+                                <p class="text-danger mt-2"><small><i class="bi bi-exclamation-circle me-1"></i>Comprovativo ilegível. Por favor, reenvie.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Upload Comprovativo -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Enviar Comprovativo de Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">Detalhes do Curso</h6>
+                        <p><strong>Curso:</strong> <span id="modalCourseName">Introdução ao JavaScript</span></p>
+                        <p><strong>Valor:</strong> R$ <span id="modalCourseAmount">450,00</span></p>
+                    </div>
+                    
+                    <div class="file-upload-container" id="dropArea">
+                        <div class="file-upload-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <p>Arraste e solte o comprovativo de pagamento aqui</p>
+                            <p>ou</p>
+                            <button type="button" class="btn btn-primary" id="browseButton">
+                                <i class="bi bi-folder me-2"></i>Procurar Arquivo
+                            </button>
+                        </div>
+                        <input type="file" class="file-upload-input" id="fileUpload" accept=".jpg,.jpeg,.png,.pdf">
+                        <div class="file-upload-info mt-2">
+                            <small class="text-muted">Formatos aceitos: JPG, PNG, PDF (máx. 5MB)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="file-preview" id="filePreview">
+                        <div class="text-center mb-3">
+                            <img src="/placeholder.svg" alt="Preview" class="file-preview-image" id="previewImage">
+                            <div id="pdfPreview" style="display: none;">
+                                <i class="bi bi-file-earmark-pdf" style="font-size: 5rem; color: #C01A15;"></i>
+                                <p>Arquivo PDF selecionado</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <p class="file-preview-name" id="fileName">arquivo.jpg</p>
+                            <p class="file-preview-size" id="fileSize">500 KB</p>
+                        </div>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-danger" id="removeFile">
+                                <i class="bi bi-trash me-2"></i>Remover Arquivo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-4">
+                        <label for="paymentDate" class="form-label">Data do Pagamento</label>
+                        <input type="date" class="form-control" id="paymentDate" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Método de Pagamento</label>
+                        <select class="form-select" id="paymentMethod" required>
+                            <option value="" selected disabled>Selecione o método de pagamento</option>
+                            <option value="transfer">Transferência Bancária</option>
+                            <option value="deposit">Depósito Bancário</option>
+                            <option value="pix">PIX</option>
+                            <option value="other">Outro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentNotes" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="paymentNotes" rows="3" placeholder="Informações adicionais sobre o pagamento..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>Após o envio, seu pagamento será analisado pela administração em até 48 horas úteis.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="submitPayment">
+                        <i class="bi bi-send me-2"></i>Enviar Comprovativo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Sidebar on Mobile
+            document.getElementById('toggle-sidebar').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('show');
+            });
+            
+            // File Upload Handling
+            const dropArea = document.getElementById('dropArea');
+            const fileUpload = document.getElementById('fileUpload');
+            const browseButton = document.getElementById('browseButton');
+            const filePreview = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+            const pdfPreview = document.getElementById('pdfPreview');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const removeFile = document.getElementById('removeFile');
+            
+            // Open file dialog when browse button is clicked
+            browseButton.addEventListener('click', function() {
+                fileUpload.click();
+            });
+            
+            // Handle file selection
+            fileUpload.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Highlight drop area when file is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('border-primary');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('border-primary');
+            }
+            
+            // Handle dropped files
+            dropArea.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            });
+            
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    const file = files[0];
+                    
+                    // Check file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('O arquivo é muito grande. O tamanho máximo permitido é 5MB.');
+                        return;
+                    }
+                    
+                    // Check file type
+                    const fileType = file.type;
+                    if (!fileType.match('image/jpeg|image/png|application/pdf')) {
+                        alert('Formato de arquivo não suportado. Por favor, envie um arquivo JPG, PNG ou PDF.');
+                        return;
+                    }
+                    
+                    // Display file info
+                    fileName.textContent = file.name;
+                    fileSize.textContent = formatFileSize(file.size);
+                    
+                    // Show preview
+                    if (fileType === 'application/pdf') {
+                        previewImage.style.display = 'none';
+                        pdfPreview.style.display = 'block';
+                    } else {
+                        previewImage.style.display = 'block';
+                        pdfPreview.style.display = 'none';
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    
+                    // Show preview container
+                    dropArea.style.display = 'none';
+                    filePreview.style.display = 'block';
+                }
+            }
+            
+            // Remove selected file
+            removeFile.addEventListener('click', function() {
+                fileUpload.value = '';
+                dropArea.style.display = 'block';
+                filePreview.style.display = 'none';
+            });
+            
+            // Format file size
+            function formatFileSize(bytes) {
+                if (bytes < 1024) {
+                    return bytes + ' bytes';
+                } else if (bytes < 1024 * 1024) {
+                    return (bytes / 1024).toFixed(2) + ' KB';
+                } else {
+                    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+                }
+            }
+            
+            // Set course details in modal
+            const uploadModal = document.getElementById('uploadModal');
+            uploadModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const course = button.getAttribute('data-course');
+                const amount = button.getAttribute('data-amount');
+                
+                document.getElementById('modalCourseName').textContent = course;
+                document.getElementById('modalCourseAmount').textContent = amount;
+            });
+            
+            // Submit payment
+            document.getElementById('submitPayment').addEventListener('click', function() {
+                const fileInput = document.getElementById('fileUpload');
+                const paymentDate = document.getElementById('paymentDate');
+                const paymentMethod = document.getElementById('paymentMethod');
+                
+                // Validate form
+                if (!fileInput.files.length) {
+                    alert('Por favor, selecione um comprovativo de pagamento.');
+                    return;
+                }
+                
+                if (!paymentDate.value) {
+                    alert('Por favor, informe a data do pagamento.');
+                    paymentDate.focus();
+                    return;
+                }
+                
+                if (!paymentMethod.value) {
+                    alert('Por favor, selecione o método de pagamento.');
+                    paymentMethod.focus();
+                    return;
+                }
+                
+                // In a real application, you would upload the file to the server here
+                // For this demo, we'll just show a success message
+                
+                // Show loading state
+                const submitButton = document.getElementById('submitPayment');
+                const originalText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+                
+                // Simulate server request
+                setTimeout(function() {
+                    // Hide modal
+                    const modal = bootstrap.Modal.getInstance(uploadModal);
+                    modal.hide();
+                    
+                    // Show success message with email notification
+                    alert('Comprovativo enviado com sucesso! Você receberá um email de confirmação e seu pagamento será analisado em até 48 horas úteis.');
+                    
+                    // Reset form
+                    fileUpload.value = '';
+                    paymentDate.value = '';
+                    paymentMethod.value = '';
+                    dropArea.style.display = 'block';
+                    filePreview.style.display = 'none';
+                    
+                    // Reset button
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                    
+                    // Reload page to show updated status
+                    window.location.reload();
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

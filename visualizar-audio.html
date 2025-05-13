@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Áudio - Sistema de Formação Profissional</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Course Navigation */
+        .course-nav {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .course-nav-header {
+            padding: 15px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .course-nav-header i {
+            margin-right: 10px;
+        }
+        
+        .course-nav-back {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .course-nav-back:hover {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .course-nav-modules {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .module-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .module-header {
+            padding: 15px 20px;
+            background-color: var(--bg-light);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .module-header:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .module-header.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .module-content {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .lesson-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px 12px 40px;
+            display: flex;
+            align-items: center;
+            background-color: white;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .lesson-item:last-child {
+            border-bottom: none;
+        }
+        
+        .lesson-item.active {
+            background-color: rgba(0,150,214,0.1);
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 36px;
+            font-weight: 500;
+        }
+        
+        .lesson-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .lesson-icon {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        /* Material Viewer */
+        .material-viewer {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .material-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .material-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .material-meta {
+            display: flex;
+            align-items: center;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .material-meta-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        
+        .material-meta-item i {
+            margin-right: 5px;
+        }
+        
+        .material-content {
+            padding: 20px;
+        }
+        
+        .material-player {
+            margin-bottom: 30px;
+        }
+        
+        .material-player audio {
+            width: 100%;
+            border-radius: 5px;
+            background-color: var(--bg-light);
+        }
+        
+        .audio-visualization {
+            height: 200px;
+            background-color: var(--bg-light);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .audio-wave {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 0 20px;
+        }
+        
+        .audio-bar {
+            width: 3px;
+            background-color: var(--secondary-color);
+            margin: 0 2px;
+            border-radius: 3px;
+            animation: audio-wave 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes audio-wave {
+            0%, 100% {
+                height: 20px;
+            }
+            50% {
+                height: 100px;
+            }
+        }
+        
+        .audio-bar:nth-child(1) { animation-delay: 0.1s; }
+        .audio-bar:nth-child(2) { animation-delay: 0.2s; }
+        .audio-bar:nth-child(3) { animation-delay: 0.3s; }
+        .audio-bar:nth-child(4) { animation-delay: 0.4s; }
+        .audio-bar:nth-child(5) { animation-delay: 0.5s; }
+        .audio-bar:nth-child(6) { animation-delay: 0.6s; }
+        .audio-bar:nth-child(7) { animation-delay: 0.7s; }
+        .audio-bar:nth-child(8) { animation-delay: 0.8s; }
+        .audio-bar:nth-child(9) { animation-delay: 0.9s; }
+        .audio-bar:nth-child(10) { animation-delay: 1.0s; }
+        .audio-bar:nth-child(11) { animation-delay: 0.9s; }
+        .audio-bar:nth-child(12) { animation-delay: 0.8s; }
+        .audio-bar:nth-child(13) { animation-delay: 0.7s; }
+        .audio-bar:nth-child(14) { animation-delay: 0.6s; }
+        .audio-bar:nth-child(15) { animation-delay: 0.5s; }
+        .audio-bar:nth-child(16) { animation-delay: 0.4s; }
+        .audio-bar:nth-child(17) { animation-delay: 0.3s; }
+        .audio-bar:nth-child(18) { animation-delay: 0.2s; }
+        .audio-bar:nth-child(19) { animation-delay: 0.1s; }
+        .audio-bar:nth-child(20) { animation-delay: 0.0s; }
+        
+        .material-text {
+            line-height: 1.6;
+        }
+        
+        .material-text p {
+            margin-bottom: 1rem;
+        }
+        
+        .material-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .material-nav-btn {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .material-nav-btn:hover {
+            background-color: rgba(0,150,214,0.1);
+        }
+        
+        .material-nav-btn.prev i {
+            margin-right: 10px;
+        }
+        
+        .material-nav-btn.next i {
+            margin-left: 10px;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .progress-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .progress {
+            height: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .progress-bar {
+            background-color: var(--secondary-color);
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1050;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .course-nav-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .course-nav-back {
+                margin-bottom: 10px;
+            }
+            
+            .lesson-item {
+                padding: 12px 15px 12px 30px;
+            }
+            
+            .lesson-item.active {
+                padding-left: 26px;
+            }
+            
+            .material-meta {
+                flex-wrap: wrap;
+            }
+            
+            .material-meta-item {
+                margin-bottom: 5px;
+            }
+            
+            .material-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .material-nav-btn.next {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formando</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Aprendizagem</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="formando-dashboard.html" class="nav-link">
+                        <i class="bi bi-collection"></i> <span>Recursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-dots"></i> <span>Chat</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-graph-up"></i> <span>Desempenho</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-award"></i> <span>Certificados</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conta</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-person"></i> <span>Meu Perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Formando">
+                    <span class="d-none d-md-inline-block">João Silva</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="login.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="row">
+                <div class="col-lg-4">
+                    <!-- Progress Container -->
+                    <div class="progress-container">
+                        <h5 class="progress-title">Seu Progresso no Curso</h5>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>25% concluído</span>
+                            <span>3/12 aulas</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Navigation -->
+                    <div class="course-nav">
+                        <div class="course-nav-header">
+                            <a href="#" class="course-nav-back">
+                                <i class="bi bi-arrow-left"></i> Detalhes do curso/UX na prática
+                            </a>
+                        </div>
+                        
+                        <ul class="course-nav-modules">
+                            <li class="module-item">
+                                <div class="module-header active" data-bs-toggle="collapse" data-bs-target="#module1Content">
+                                    <span>01 - Introdução ao UI Design</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <ul class="module-content collapse show" id="module1Content">
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 01 - O que é o UI Design?
+                                    </a>
+                                    <a href="visualizar-material.html" class="lesson-item active">
+                                        <i class="bi bi-file-earmark-music lesson-icon"></i> 02 - Como surgiu? (Áudio)
+                                    </a>
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 03 - Diferença entre UI e UX?
+                                    </a>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module2Content">
+                                    <span>02 - Deletando alguns elementos</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module2Content">
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 01 - Introdução
+                                    </a>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module3Content">
+                                    <span>03 - Deletando alguns elementos</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module3Content">
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 01 - Introdução
+                                    </a>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module4Content">
+                                    <span>04 - Métodos de organização (algoritmos de ordenação)</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module4Content">
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 01 - Introdução
+                                    </a>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#moduleEvalContent">
+                                    <span>Avaliação da aula</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="moduleEvalContent">
+                                    <a href="#" class="lesson-item">
+                                        <i class="bi bi-clipboard-check lesson-icon"></i> Avaliação Final
+                                    </a>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    <!-- Material Viewer - Audio Example -->
+                    <div class="material-viewer">
+                        <div class="material-header">
+                            <h1 class="material-title">Como surgiu o UI Design?</h1>
+                            <div class="material-meta">
+                                <div class="material-meta-item">
+                                    <i class="bi bi-person"></i> Carlos Oliveira
+                                </div>
+                                <div class="material-meta-item">
+                                    <i class="bi bi-calendar3"></i> Atualizado em 08/03/2025
+                                </div>
+                                <div class="material-meta-item">
+                                    <i class="bi bi-clock"></i> 15min
+                                </div>
+                                <div class="material-meta-item">
+                                    <i class="bi bi-file-earmark-music"></i> Áudio
+                                </div>
+                            </div>
+                        </div>
+                        <div class="material-content">
+                            <div class="audio-visualization">
+                                <div class="audio-wave">
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                    <div class="audio-bar"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="material-player">
+                                <audio controls>
+                                    <source src="#" type="audio/mpeg">
+                                    Seu navegador não suporta a reprodução de áudios.
+                                </audio>
+                            </div>
+                            
+                            <div class="material-text">
+                                <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
+                                
+                                <p>Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p>
+                                
+                                <h4>Transcrição do Áudio</h4>
+                                <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
+                            </div>
+                            
+                            <div class="material-actions">
+                                <a href="#" class="material-nav-btn prev">
+                                    <i class="bi bi-arrow-left"></i> Aula Anterior
+                                </a>
+                                <button class="btn btn-success" id="mark-complete-btn">
+                                    <i class="bi bi-check-circle me-2"></i> Marcar como Concluído
+                                </button>
+                                <a href="#" class="material-nav-btn next">
+                                    Próxima Aula <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const sidebar = document.getElementById('sidebar');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const markCompleteBtn = document.getElementById('mark-complete-btn');
+            
+            // Toggle sidebar on mobile
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+            
+            // Module headers toggle
+            document.querySelectorAll('.module-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const isActive = this.classList.contains('active');
+                    
+                    // Remove active class from all headers
+                    document.querySelectorAll('.module-header').forEach(h => {
+                        h.classList.remove('active');
+                        h.querySelector('i').className = 'bi bi-chevron-right';
+                    });
+                    
+                    // If the clicked header wasn't active, make it active
+                    if (!isActive) {
+                        this.classList.add('active');
+                        this.querySelector('i').className = 'bi bi-chevron-down';
+                    }
+                });
+            });
+            
+            // Mark as complete button
+            if (markCompleteBtn) {
+                markCompleteBtn.addEventListener('click', function() {
+                    if (this.classList.contains('btn-success')) {
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-outline-secondary');
+                        this.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i> Marcar como Não Concluído';
+                        
+                        // Update progress
+                        const progressBar = document.querySelector('.progress-bar');
+                        const progressText = document.querySelector('.progress-text span:first-child');
+                        const lessonsText = document.querySelector('.progress-text span:last-child');
+                        
+                        if (progressBar && progressText && lessonsText) {
+                            progressBar.style.width = '33%';
+                            progressBar.setAttribute('aria-valuenow', '33');
+                            progressText.textContent = '33% concluído';
+                            lessonsText.textContent = '4/12 aulas';
+                        }
+                    } else {
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-success');
+                        this.innerHTML = '<i class="bi bi-check-circle me-2"></i> Marcar como Concluído';
+                        
+                        // Update progress
+                        const progressBar = document.querySelector('.progress-bar');
+                        const progressText = document.querySelector('.progress-text span:first-child');
+                        const lessonsText = document.querySelector('.progress-text span:last-child');
+                        
+                        if (progressBar && progressText && lessonsText) {
+                            progressBar.style.width = '25%';
+                            progressBar.setAttribute('aria-valuenow', '25');
+                            progressText.textContent = '25% concluído';
+                            lessonsText.textContent = '3/12 aulas';
+                        }
+                    }
+                });
+            }
+            
+            // Audio visualization animation control
+            const audio = document.querySelector('audio');
+            const audioWave = document.querySelector('.audio-wave');
+            
+            if (audio && audioWave) {
+                audio.addEventListener('play', function() {
+                    audioWave.style.animationPlayState = 'running';
+                });
+                
+                audio.addEventListener('pause', function() {
+                    audioWave.style.animationPlayState = 'paused';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

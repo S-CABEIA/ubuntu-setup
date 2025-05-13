@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geração de Perguntas - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .option-container {
+            position: relative;
+            padding-right: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .remove-option {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--danger-color);
+            cursor: pointer;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .ai-badge {
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Geração de Perguntas</h1>
+            <a href="javascript:history.back()" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Nova Pergunta</span>
+                    <span class="badge bg-primary">Admin/Formador</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="questionForm">
+                    <div class="mb-3">
+                        <label for="questionTopic" class="form-label">Tema da Pergunta</label>
+                        <input type="text" class="form-control" id="questionTopic" placeholder="Ex: JavaScript Básico, Estruturas de Dados, etc.">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="button" id="generateBtn" class="btn btn-primary">
+                            <span class="normal-text"><i class="bi bi-magic me-2"></i>Gerar Pergunta Automaticamente</span>
+                            <span class="loading-spinner">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Gerando...
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="questionText" class="form-label">Pergunta <span id="aiGenerated" class="ai-badge d-none">Gerado por IA</span></label>
+                        <textarea class="form-control" id="questionText" rows="4" placeholder="Digite ou gere a pergunta..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Questão</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="questionType" id="multipleChoice" value="multiple" checked>
+                            <label class="form-check-label" for="multipleChoice">
+                                Múltipla Escolha
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="questionType" id="essay" value="essay">
+                            <label class="form-check-label" for="essay">
+                                Dissertativa
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="multipleChoiceOptions" class="mb-3">
+                        <label class="form-label">Alternativas</label>
+                        <div id="optionsContainer">
+                            <div class="option-container">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="radio" name="correctOption" value="0" checked>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Alternativa 1" name="options[]">
+                                    <button type="button" class="btn btn-outline-danger remove-option">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="option-container">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="radio" name="correctOption" value="1">
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Alternativa 2" name="options[]">
+                                    <button type="button" class="btn btn-outline-danger remove-option">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="addOptionBtn" class="btn btn-outline-primary btn-sm mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Adicionar Alternativa
+                        </button>
+                    </div>
+                    
+                    <div id="essayOptions" class="mb-3 d-none">
+                        <label for="modelAnswer" class="form-label">Resposta Modelo (para referência do formador)</label>
+                        <textarea class="form-control" id="modelAnswer" rows="3" placeholder="Digite uma resposta modelo para auxiliar na correção..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="questionDifficulty" class="form-label">Nível de Dificuldade</label>
+                        <select class="form-select" id="questionDifficulty">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="questionCategory" class="form-label">Categoria</label>
+                        <select class="form-select" id="questionCategory">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML/CSS</option>
+                            <option value="design">Design Thinking</option>
+                            <option value="data">Data Science</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary me-md-2" id="clearBtn">Limpar</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Salvar Pergunta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sucesso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-center">Pergunta salva com sucesso!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const questionForm = document.getElementById('questionForm');
+            const generateBtn = document.getElementById('generateBtn');
+            const questionTopic = document.getElementById('questionTopic');
+            const questionText = document.getElementById('questionText');
+            const multipleChoice = document.getElementById('multipleChoice');
+            const essay = document.getElementById('essay');
+            const multipleChoiceOptions = document.getElementById('multipleChoiceOptions');
+            const essayOptions = document.getElementById('essayOptions');
+            const optionsContainer = document.getElementById('optionsContainer');
+            const addOptionBtn = document.getElementById('addOptionBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const aiGenerated = document.getElementById('aiGenerated');
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            
+            // Toggle question type
+            multipleChoice.addEventListener('change', function() {
+                if (this.checked) {
+                    multipleChoiceOptions.classList.remove('d-none');
+                    essayOptions.classList.add('d-none');
+                }
+            });
+            
+            essay.addEventListener('change', function() {
+                if (this.checked) {
+                    multipleChoiceOptions.classList.add('d-none');
+                    essayOptions.classList.remove('d-none');
+                }
+            });
+            
+            // Add option
+            addOptionBtn.addEventListener('click', function() {
+                const optionCount = optionsContainer.children.length;
+                const newOption = document.createElement('div');
+                newOption.className = 'option-container';
+                newOption.innerHTML = `
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="radio" name="correctOption" value="${optionCount}">
+                        </div>
+                        <input type="text" class="form-control" placeholder="Alternativa ${optionCount + 1}" name="options[]">
+                        <button type="button" class="btn btn-outline-danger remove-option">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                optionsContainer.appendChild(newOption);
+                
+                // Add event listener to the new remove button
+                const removeBtn = newOption.querySelector('.remove-option');
+                removeBtn.addEventListener('click', function() {
+                    optionsContainer.removeChild(newOption);
+                    updateOptionValues();
+                });
+            });
+            
+            // Remove option
+            document.querySelectorAll('.remove-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (optionsContainer.children.length > 2) {
+                        this.closest('.option-container').remove();
+                        updateOptionValues();
+                    } else {
+                        alert('É necessário ter pelo menos duas alternativas.');
+                    }
+                });
+            });
+            
+            // Update option values after removal
+            function updateOptionValues() {
+                const options = optionsContainer.querySelectorAll('.option-container');
+                options.forEach((option, index) => {
+                    const radio = option.querySelector('input[type="radio"]');
+                    const input = option.querySelector('input[type="text"]');
+                    radio.value = index;
+                    input.placeholder = `Alternativa ${index + 1}`;
+                });
+            }
+            
+            // Generate question with AI
+            generateBtn.addEventListener('click', function() {
+                const topic = questionTopic.value.trim();
+                if (!topic) {
+                    alert('Por favor, insira um tema para a pergunta.');
+                    return;
+                }
+                
+                // Show loading state
+                generateBtn.querySelector('.normal-text').style.display = 'none';
+                generateBtn.querySelector('.loading-spinner').style.display = 'inline-block';
+                generateBtn.disabled = true;
+                
+                // Simulate API call (replace with actual API call)
+                setTimeout(() => {
+                    // Mock response
+                    let generatedQuestion;
+                    if (multipleChoice.checked) {
+                        generatedQuestion = generateMockMultipleChoiceQuestion(topic);
+                        
+                        // Clear existing options
+                        while (optionsContainer.children.length > 0) {
+                            optionsContainer.removeChild(optionsContainer.lastChild);
+                        }
+                        
+                        // Add generated options
+                        generatedQuestion.options.forEach((option, index) => {
+                            const newOption = document.createElement('div');
+                            newOption.className = 'option-container';
+                            newOption.innerHTML = `
+                                <div class="input-group mb-2">
+                                    <div class="input-group-text">
+                                        <input class="form-check-input mt-0" type="radio" name="correctOption" value="${index}" ${index === generatedQuestion.correctOption ? 'checked' : ''}>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Alternativa ${index + 1}" name="options[]" value="${option}">
+                                    <button type="button" class="btn btn-outline-danger remove-option">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                            optionsContainer.appendChild(newOption);
+                            
+                            // Add event listener to the new remove button
+                            const removeBtn = newOption.querySelector('.remove-option');
+                            removeBtn.addEventListener('click', function() {
+                                if (optionsContainer.children.length > 2) {
+                                    optionsContainer.removeChild(newOption);
+                                    updateOptionValues();
+                                } else {
+                                    alert('É necessário ter pelo menos duas alternativas.');
+                                }
+                            });
+                        });
+                        
+                        questionText.value = generatedQuestion.question;
+                    } else {
+                        generatedQuestion = generateMockEssayQuestion(topic);
+                        questionText.value = generatedQuestion.question;
+                        document.getElementById('modelAnswer').value = generatedQuestion.modelAnswer;
+                    }
+                    
+                    // Show AI generated badge
+                    aiGenerated.classList.remove('d-none');
+                    
+                    // Reset button state
+                    generateBtn.querySelector('.normal-text').style.display = 'inline-block';
+                    generateBtn.querySelector('.loading-spinner').style.display = 'none';
+                    generateBtn.disabled = false;
+                }, 2000);
+            });
+            
+            // Mock question generators
+            function generateMockMultipleChoiceQuestion(topic) {
+                const questions = {
+                    'javascript': {
+                        question: 'Qual é a saída do seguinte código JavaScript?\n\nconst x = 10;\nlet y = 5;\nconsole.log(x + y);',
+                        options: ['10', '15', '5', 'undefined'],
+                        correctOption: 1
+                    },
+                    'python': {
+                        question: 'Qual é a forma correta de criar uma lista em Python?',
+                        options: ['list = []', 'list = {}', 'list = ()', 'list = <>'],
+                        correctOption: 0
+                    },
+                    'html': {
+                        question: 'Qual tag HTML é usada para criar um link?',
+                        options: ['<link>', '<a>', '<href>', '<url>'],
+                        correctOption: 1
+                    },
+                    'design': {
+                        question: 'Qual das seguintes NÃO é uma fase do Design Thinking?',
+                        options: ['Empatia', 'Definição', 'Ideação', 'Compilação'],
+                        correctOption: 3
+                    },
+                    'data': {
+                        question: 'Qual biblioteca Python é mais comumente usada para análise de dados?',
+                        options: ['NumPy', 'Pandas', 'Matplotlib', 'Scikit-learn'],
+                        correctOption: 1
+                    }
+                };
+                
+                // Default to JavaScript if topic doesn't match
+                const lowerTopic = topic.toLowerCase();
+                for (const key in questions) {
+                    if (lowerTopic.includes(key)) {
+                        return questions[key];
+                    }
+                }
+                return questions.javascript;
+            }
+            
+            function generateMockEssayQuestion(topic) {
+                const questions = {
+                    'javascript': {
+                        question: 'Explique o conceito de closure em JavaScript e forneça um exemplo prático de seu uso.',
+                        modelAnswer: 'Uma closure é a combinação de uma função e o ambiente léxico em que foi declarada. Isso permite que a função acesse variáveis de seu escopo externo mesmo após a execução da função externa. Exemplo: function criarContador() { let contador = 0; return function() { return ++contador; }; }'
+                    },
+                    'python': {
+                        question: 'Descreva as diferenças entre listas e tuplas em Python e quando você usaria cada uma delas.',
+                        modelAnswer: 'Listas são mutáveis, enquanto tuplas são imutáveis. Listas são usadas quando precisamos modificar a coleção, enquanto tuplas são usadas para dados que não devem ser alterados, como coordenadas ou configurações.'
+                    },
+                    'html': {
+                        question: 'Explique a importância da semântica HTML5 e como ela melhora a acessibilidade web.',
+                        modelAnswer: 'A semântica HTML5 fornece significado estrutural ao conteúdo web, permitindo que leitores de tela e tecnologias assistivas interpretem melhor o conteúdo. Tags como <header>, <nav>, <main> e <footer> ajudam a criar uma estrutura mais compreensível.'
+                    },
+                    'design': {
+                        question: 'Descreva o processo de Design Thinking e como ele pode ser aplicado para resolver problemas complexos.',
+                        modelAnswer: 'O Design Thinking é um processo iterativo que inclui as fases de Empatia, Definição, Ideação, Prototipagem e Teste. Ele coloca o usuário no centro do processo e busca soluções inovadoras através da compreensão profunda das necessidades dos usuários.'
+                    },
+                    'data': {
+                        question: 'Explique o conceito de overfitting em machine learning e como pode ser evitado.',
+                        modelAnswer: 'Overfitting ocorre quando um modelo se ajusta demais aos dados de treinamento, capturando ruído em vez de padrões reais. Isso resulta em baixo desempenho em dados novos. Pode ser evitado usando técnicas como validação cruzada, regularização e aumento do conjunto de dados.'
+                    }
+                };
+                
+                // Default to JavaScript if topic doesn't match
+                const lowerTopic = topic.toLowerCase();
+                for (const key in questions) {
+                    if (lowerTopic.includes(key)) {
+                        return questions[key];
+                    }
+                }
+                return questions.javascript;
+            }
+            
+            // Clear form
+            clearBtn.addEventListener('click', function() {
+                questionForm.reset();
+                questionText.value = '';
+                document.getElementById('modelAnswer').value = '';
+                aiGenerated.classList.add('d-none');
+                
+                // Reset options to default
+                while (optionsContainer.children.length > 0) {
+                    optionsContainer.removeChild(optionsContainer.lastChild);
+                }
+                
+                // Add two default options
+                for (let i = 0; i < 2; i++) {
+                    const newOption = document.createElement('div');
+                    newOption.className = 'option-container';
+                    newOption.innerHTML = `
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="radio" name="correctOption" value="${i}" ${i === 0 ? 'checked' : ''}>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Alternativa ${i + 1}" name="options[]">
+                            <button type="button" class="btn btn-outline-danger remove-option">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    optionsContainer.appendChild(newOption);
+                    
+                    // Add event listener to the new remove button
+                    const removeBtn = newOption.querySelector('.remove-option');
+                    removeBtn.addEventListener('click', function() {
+                        if (optionsContainer.children.length > 2) {
+                            optionsContainer.removeChild(newOption);
+                            updateOptionValues();
+                        } else {
+                            alert('É necessário ter pelo menos duas alternativas.');
+                        }
+                    });
+                }
+                
+                // Show multiple choice options
+                multipleChoiceOptions.classList.remove('d-none');
+                essayOptions.classList.add('d-none');
+            });
+            
+            // Save question
+            questionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                if (!questionText.value.trim()) {
+                    alert('Por favor, insira uma pergunta.');
+                    return;
+                }
+                
+                if (multipleChoice.checked) {
+                    // Validate options
+                    const options = document.querySelectorAll('input[name="options[]"]');
+                    let valid = true;
+                    options.forEach(option => {
+                        if (!option.value.trim()) {
+                            valid = false;
+                        }
+                    });
+                    
+                    if (!valid) {
+                        alert('Por favor, preencha todas as alternativas.');
+                        return;
+                    }
+                }
+                
+                // Collect form data
+                const formData = {
+                    topic: questionTopic.value,
+                    question: questionText.value,
+                    type: multipleChoice.checked ? 'multiple' : 'essay',
+                    difficulty: document.getElementById('questionDifficulty').value,
+                    category: document.getElementById('questionCategory').value
+                };
+                
+                if (multipleChoice.checked) {
+                    formData.options = [];
+                    document.querySelectorAll('input[name="options[]"]').forEach(option => {
+                        formData.options.push(option.value);
+                    });
+                    formData.correctOption = document.querySelector('input[name="correctOption"]:checked').value;
+                } else {
+                    formData.modelAnswer = document.getElementById('modelAnswer').value;
+                }
+                
+                // Send data to server (simulated)
+                console.log('Sending question data:', formData);
+                
+                // Show success modal
+                successModal.show();
+                
+                // Reset form after success
+                setTimeout(() => {
+                    clearBtn.click();
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

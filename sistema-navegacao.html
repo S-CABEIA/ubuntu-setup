@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Navegação do Sistema - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #003A5A; /* Azul Cisco mais escuro */
+            --secondary-color: #00507A; /* Azul secundário Cisco mais escuro */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #3A7A3A; /* Verde Cisco mais escuro */
+            --warning-color: #D99000; /* Amarelo Cisco mais escuro */
+            --danger-color: #C01A15; /* Vermelho Cisco mais escuro */
+            --admin-color: #2C3E50; /* Cor especial para admin */
+            --admin-accent: #34495E; /* Cor de destaque para admin */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .card-header.admin {
+            color: var(--admin-color);
+        }
+        
+        .card-header.formador {
+            color: var(--primary-color);
+        }
+        
+        .card-header.formando {
+            color: var(--primary-color);
+        }
+        
+        .card-header.financeiro {
+            color: var(--success-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .nav-link-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .nav-link-item i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .nav-link-item.admin i {
+            color: var(--admin-color);
+        }
+        
+        .nav-link-item.formador i {
+            color: var(--primary-color);
+        }
+        
+        .nav-link-item.formando i {
+            color: var(--primary-color);
+        }
+        
+        .nav-link-item.financeiro i {
+            color: var(--success-color);
+        }
+        
+        .nav-link-item .badge {
+            margin-left: auto;
+        }
+        
+        .badge.admin {
+            background-color: var(--admin-color);
+            color: white;
+        }
+        
+        .badge.formador {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .badge.formando {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .badge.financeiro {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .section-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header text-center">
+            <h1>Mapa de Navegação do Sistema</h1>
+            <p class="mb-0">Plataforma de Aprendizagem Ubuntu</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header admin">
+                        <i class="bi bi-shield-lock me-2"></i>Painel do Administrador
+                    </div>
+                    <div class="card-body">
+                        <a href="admin-dashboard.html" class="nav-link-item admin">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="admin-dashboard.html#usuarios" class="nav-link-item admin">
+                            <i class="bi bi-people"></i>
+                            <span>Usuários</span>
+                        </a>
+                        <a href="admin-dashboard.html#formadores" class="nav-link-item admin">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Formadores</span>
+                        </a>
+                        <a href="admin-dashboard.html#alunos" class="nav-link-item admin">
+                            <i class="bi bi-mortarboard"></i>
+                            <span>Alunos</span>
+                        </a>
+                        <a href="admin-dashboard.html#cursos" class="nav-link-item admin">
+                            <i class="bi bi-book"></i>
+                            <span>Cursos</span>
+                        </a>
+                        <a href="admin-dashboard.html#materiais" class="nav-link-item admin">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span>Materiais</span>
+                            <span class="badge admin">Visualização</span>
+                        </a>
+                        <a href="admin-permissoes.html" class="nav-link-item admin">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Permissões</span>
+                        </a>
+                        <a href="admin-dashboard.html#logs" class="nav-link-item admin">
+                            <i class="bi bi-list-check"></i>
+                            <span>Logs do Sistema</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header financeiro">
+                        <i class="bi bi-cash-stack me-2"></i>Gestão Financeira
+                    </div>
+                    <div class="card-body">
+                        <a href="gestao-financeira.html" class="nav-link-item financeiro">
+                            <i class="bi bi-cash-stack"></i>
+                            <span>Visão Geral</span>
+                        </a>
+                        <a href="gestao-financeira.html#mensalidades" class="nav-link-item financeiro">
+                            <i class="bi bi-credit-card"></i>
+                            <span>Mensalidades</span>
+                        </a>
+                        <a href="gestao-financeira.html#faturas" class="nav-link-item financeiro">
+                            <i class="bi bi-receipt"></i>
+                            <span>Faturas</span>
+                        </a>
+                        <a href="gestao-financeira.html#relatorios" class="nav-link-item financeiro">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Relatórios</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header formador">
+                        <i class="bi bi-person-badge me-2"></i>Painel do Formador
+                    </div>
+                    <div class="card-body">
+                        <a href="formador-dashboard.html" class="nav-link-item formador">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="formador-dashboard.html#cursos" class="nav-link-item formador">
+                            <i class="bi bi-book"></i>
+                            <span>Meus Cursos</span>
+                        </a>
+                        <a href="formador-dashboard.html#turmas" class="nav-link-item formador">
+                            <i class="bi bi-people"></i>
+                            <span>Turmas</span>
+                        </a>
+                        <a href="formador-dashboard.html#alunos" class="nav-link-item formador">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Alunos</span>
+                        </a>
+                        <a href="gerenciar-materiais.html" class="nav-link-item formador">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span>Materiais</span>
+                        </a>
+                        <a href="upload-materiais.html" class="nav-link-item formador">
+                            <i class="bi bi-upload"></i>
+                            <span>Upload de Materiais</span>
+                        </a>
+                        <a href="formador-dashboard.html#avaliacoes" class="nav-link-item formador">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Avaliações</span>
+                        </a>
+                        <a href="criacao-quizzes.html" class="nav-link-item formador">
+                            <i class="bi bi-question-circle"></i>
+                            <span>Quizzes</span>
+                        </a>
+                        <a href="geracao-perguntas.html" class="nav-link-item formador">
+                            <i class="bi bi-lightbulb"></i>
+                            <span>Geração de Perguntas</span>
+                        </a>
+                        <a href="formador-permissoes.html" class="nav-link-item formador">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Permissões</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header formando">
+                        <i class="bi bi-mortarboard me-2"></i>Painel do Formando
+                    </div>
+                    <div class="card-body">
+                        <a href="formando-dashboard.html" class="nav-link-item formando">
+                            <i class="bi bi-collection"></i>
+                            <span>Meus Cursos</span>
+                        </a>
+                        <a href="curso-materiais.html" class="nav-link-item formando">
+                            <i class="bi bi-book"></i>
+                            <span>Materiais do Curso</span>
+                        </a>
+                        <a href="visualizar-material.html" class="nav-link-item formando">
+                            <i class="bi bi-play-circle"></i>
+                            <span>Visualizar Vídeo</span>
+                        </a>
+                        <a href="visualizar-documento.html" class="nav-link-item formando">
+                            <i class="bi bi-file-text"></i>
+                            <span>Visualizar Documento</span>
+                        </a>
+                        <a href="visualizar-audio.html" class="nav-link-item formando">
+                            <i class="bi bi-music-note-beamed"></i>
+                            <span>Ouvir Áudio</span>
+                        </a>
+                        <a href="formando-dashboard.html#chat" class="nav-link-item formando">
+                            <i class="bi bi-chat-dots"></i>
+                            <span>Chat</span>
+                        </a>
+                        <a href="realizacao-prova.html" class="nav-link-item formando">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Realizar Avaliação</span>
+                        </a>
+                        <a href="formando-dashboard.html#desempenho" class="nav-link-item formando">
+                            <i class="bi bi-graph-up"></i>
+                            <span>Desempenho</span>
+                        </a>
+                        <a href="formando-dashboard.html#certificados" class="nav-link-item formando">
+                            <i class="bi bi-award"></i>
+                            <span>Certificados</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3 class="section-title">Páginas de Acesso</h3>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-door-open me-2"></i>Acesso ao Sistema
+                    </div>
+                    <div class="card-body">
+                        <a href="index.html" class="nav-link-item">
+                            <i class="bi bi-house"></i>
+                            <span>Página Inicial</span>
+                        </a>
+                        <a href="login.html" class="nav-link-item">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Login</span>
+                        </a>
+                        <a href="formando-registro.html" class="nav-link-item">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Registro de Aluno</span>
+                        </a>
+                        <a href="formador-registro.html" class="nav-link-item">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Registro de Formador</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-info-circle me-2"></i>Integração com Moodle
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Integração com Moodle:</strong> O sistema está integrado com o Moodle para avaliações e provas mais complexas. Os formadores podem criar e gerenciar avaliações avançadas, enquanto os alunos podem realizá-las diretamente na plataforma Moodle.
+                        </div>
+                        
+                        <h5>Recursos disponíveis no Moodle:</h5>
+                        <ul>
+                            <li>Avaliações com diversos tipos de questões (múltipla escolha, verdadeiro/falso, dissertativas, etc.)</li>
+                            <li>Banco de questões compartilhado entre formadores</li>
+                            <li>Relatórios detalhados de desempenho</li>
+                            <li>Ferramentas anti-plágio</li>
+                            <li>Configurações avançadas de tempo e tentativas</li>
+                        </ul>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="#" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>Acessar Moodle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="index.html" class="btn btn-outline-primary">
+                <i class="bi bi-house me-2"></i>Voltar para a Página Inicial
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

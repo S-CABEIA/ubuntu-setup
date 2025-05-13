@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realização de Prova - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .exam-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .timer {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .timer.warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .timer.danger {
+            background-color: var(--danger-color);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .exam-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .question-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .question-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .option-label {
+            display: block;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .option-label:hover {
+            background-color: var(--bg-light);
+        }
+        
+        .form-check-input:checked + .option-label {
+            border-color: var(--primary-color);
+            background-color: rgba(0, 80, 115, 0.05);
+        }
+        
+        .navigation-buttons {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px 0;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .progress {
+            height: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+        }
+        
+        .question-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .question-nav-item {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .question-nav-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .question-nav-item.answered {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        
+        .fullscreen-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .fullscreen-warning i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Exam Header -->
+    <header class="exam-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Avaliação: JavaScript Básico</h4>
+                <div class="timer" id="timer">
+                    <i class="bi bi-clock me-2"></i><span id="timerDisplay">45:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Exam Container -->
+    <div class="exam-container">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Progresso</h5>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                    <small><span id="answeredCount">0</span>/<span id="totalQuestions">5</span> perguntas respondidas</small>
+                    <small id="progressPercentage">0%</small>
+                </div>
+                
+                <div class="question-nav mt-3" id="questionNav">
+                    <!-- Question navigation will be generated here -->
+                </div>
+            </div>
+        </div>
+        
+        <form id="examForm">
+            <div id="questionsContainer">
+                <!-- Question 1 (Multiple Choice) -->
+                <div class="question-card" data-question="1">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="question-number">1</div>
+                        <h5 class="mb-0">Qual é a saída do seguinte código JavaScript?</h5>
+                    </div>
+                    <pre class="bg-light p-3 rounded mb-3">const x = 10;
+let y = 5;
+console.log(x + y);</pre>
+                    <div class="options">
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question1" id="q1_option1" value="1">
+                            <label class="option-label" for="q1_option1">10</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question1" id="q1_option2" value="2">
+                            <label class="option-label" for="q1_option2">15</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question1" id="q1_option3" value="3">
+                            <label class="option-label" for="q1_option3">5</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question1" id="q1_option4" value="4">
+                            <label class="option-label" for="q1_option4">undefined</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Question 2 (Multiple Choice) -->
+                <div class="question-card d-none" data-question="2">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="question-number">2</div>
+                        <h5 class="mb-0">Qual método é usado para adicionar um elemento ao final de um array em JavaScript?</h5>
+                    </div>
+                    <div class="options">
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question2" id="q2_option1" value="1">
+                            <label class="option-label" for="q2_option1">push()</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question2" id="q2_option2" value="2">
+                            <label class="option-label" for="q2_option2">pop()</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question2" id="q2_option3" value="3">
+                            <label class="option-label" for="q2_option3">shift()</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question2" id="q2_option4" value="4">
+                            <label class="option-label" for="q2_option4">unshift()</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Question 3 (Essay) -->
+                <div class="question-card d-none" data-question="3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="question-number">3</div>
+                        <h5 class="mb-0">Explique o conceito de closure em JavaScript e forneça um exemplo prático.</h5>
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" id="question3" rows="6" placeholder="Digite sua resposta..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Question 4 (Multiple Choice) -->
+                <div class="question-card d-none" data-question="4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="question-number">4</div>
+                        <h5 class="mb-0">Qual é a forma correta de declarar uma variável em JavaScript que não pode ser reatribuída?</h5>
+                    </div>
+                    <div class="options">
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question4" id="q4_option1" value="1">
+                            <label class="option-label" for="q4_option1">var x = 5;</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question4" id="q4_option2" value="2">
+                            <label class="option-label" for="q4_option2">let x = 5;</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question4" id="q4_option3" value="3">
+                            <label class="option-label" for="q4_option3">const x = 5;</label>
+                        </div>
+                        <div class="form-check custom-option">
+                            <input class="form-check-input visually-hidden" type="radio" name="question4" id="q4_option4" value="4">
+                            <label class="option-label" for="q4_option4">function x() { return 5; }</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Question 5 (Essay) -->
+                <div class="question-card d-none" data-question="5">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="question-number">5</div>
+                        <h5 class="mb-0">Descreva as diferenças entre let, var e const em JavaScript.</h5>
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" id="question5" rows="6" placeholder="Digite sua resposta..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons">
+                <div class="container">
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-primary" id="prevBtn" disabled>
+                            <i class="bi bi-arrow-left me-2"></i>Anterior
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="nextBtn">
+                            Próxima<i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-primary d-none" id="submitBtn">
+                            <i class="bi bi-check-circle me-2"></i>Finalizar Avaliação
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Fullscreen Warning -->
+    <div class="fullscreen-warning d-none" id="fullscreenWarning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <h3>Atenção!</h3>
+        <p>Você saiu do modo de tela cheia. Por favor, retorne para continuar a avaliação.</p>
+        <button class="btn btn-danger mt-3" id="returnToFullscreenBtn">
+            <i class="bi bi-arrows-fullscreen me-2"></i>Retornar à Tela Cheia
+        </button>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Envio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você tem certeza que deseja finalizar e enviar esta avaliação?</p>
+                    <div id="unansweredWarning" class="alert alert-warning d-none">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Atenção: Você ainda tem perguntas não respondidas.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Sim, Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const examForm = document.getElementById('examForm');
+            const questionsContainer = document.getElementById('questionsContainer');
+            const questionCards = document.querySelectorAll('.question-card');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timer = document.getElementById('timer');
+            const progressBar = document.getElementById('progressBar');
+            const answeredCount = document.getElementById('answeredCount');
+            const totalQuestions = document.getElementById('totalQuestions');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const questionNav = document.getElementById('questionNav');
+            const fullscreenWarning = document.getElementById('fullscreenWarning');
+            const returnToFullscreenBtn = document.getElementById('returnToFullscreenBtn');
+            const confirmSubmitModal = new bootstrap.Modal(document.getElementById('confirmSubmitModal'));
+            const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+            const unansweredWarning = document.getElementById('unansweredWarning');
+            
+            // Variables
+            let currentQuestion = 1;
+            const totalQuestionsCount = questionCards.length;
+            let answeredQuestions = new Set();
+            let timeLeft = 45 * 60; // 45 minutes in seconds
+            let timerInterval;
+            let isFullscreen = false;
+            
+            // Initialize
+            totalQuestions.textContent = totalQuestionsCount;
+            initQuestionNav();
+            startTimer();
+            requestFullscreen();
+            
+            // Initialize question navigation
+            function initQuestionNav() {
+                for (let i = 1; i <= totalQuestionsCount; i++) {
+                    const navItem = document.createElement('div');
+                    navItem.className = 'question-nav-item';
+                    navItem.textContent = i;
+                    navItem.dataset.question = i;
+                    
+                    if (i === currentQuestion) {
+                        navItem.classList.add('active');
+                    }
+                    
+                    navItem.addEventListener('click', function() {
+                        goToQuestion(parseInt(this.dataset.question));
+                    });
+                    
+                    questionNav.appendChild(navItem);
+                }
+            }
+            
+            // Go to specific question
+            function goToQuestion(questionNumber) {
+                if (questionNumber < 1 || questionNumber > totalQuestionsCount) {
+                    return;
+                }
+                
+                // Hide all questions
+                questionCards.forEach(card => {
+                    card.classList.add('d-none');
+                });
+                
+                // Show selected question
+                document.querySelector(`.question-card[data-question="${questionNumber}"]`).classList.remove('d-none');
+                
+                // Update current question
+                currentQuestion = questionNumber;
+                
+                // Update navigation buttons
+                updateNavigationButtons();
+                
+                // Update question nav
+                updateQuestionNav();
+            }
+            
+            // Update navigation buttons
+            function updateNavigationButtons() {
+                prevBtn.disabled = currentQuestion === 1;
+                
+                if (currentQuestion === totalQuestionsCount) {
+                    nextBtn.classList.add('d-none');
+                    submitBtn.classList.remove('d-none');
+                } else {
+                    nextBtn.classList.remove('d-none');
+                    submitBtn.classList.add('d-none');
+                }
+            }
+            
+            // Update question navigation
+            function updateQuestionNav() {
+                document.querySelectorAll('.question-nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    
+                    if (parseInt(item.dataset.question) === currentQuestion) {
+                        item.classList.add('active');
+                    }
+                    
+                    if (answeredQuestions.has(parseInt(item.dataset.question))) {
+                        item.classList.add('answered');
+                    } else {
+                        item.classList.remove('answered');
+                    }
+                });
+            }
+            
+            // Update progress
+            function updateProgress() {
+                const progress = (answeredQuestions.size / totalQuestionsCount) * 100;
+                progressBar.style.width = `${progress}%`;
+                answeredCount.textContent = answeredQuestions.size;
+                progressPercentage.textContent = `${Math.round(progress)}%`;
+            }
+            
+            // Start timer
+            function startTimer() {
+                timerInterval = setInterval(function() {
+                    timeLeft--;
+                    
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Warning when 5 minutes left
+                    if (timeLeft <= 300 && timeLeft > 60) {
+                        timer.classList.add('warning');
+                    }
+                    
+                    // Danger when 1 minute left
+                    if (timeLeft <= 60) {
+                        timer.classList.remove('warning');
+                        timer.classList.add('danger');
+                    }
+                    
+                    // Auto-submit when time is up
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        submitExam();
+                    }
+                }, 1000);
+            }
+            
+            // Request fullscreen
+            function requestFullscreen() {
+                const docEl = document.documentElement;
+                
+                if (docEl.requestFullscreen) {
+                    docEl.requestFullscreen();
+                } else if (docEl.mozRequestFullScreen) {
+                    docEl.mozRequestFullScreen();
+                } else if (docEl.webkitRequestFullscreen) {
+                    docEl.webkitRequestFullscreen();
+                } else if (docEl.msRequestFullscreen) {
+                    docEl.msRequestFullscreen();
+                }
+                
+                isFullscreen = true;
+            }
+            
+            // Exit fullscreen
+            function exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                isFullscreen = false;
+            }
+            
+            // Check if question is answered
+            function checkIfQuestionAnswered(questionNumber) {
+                const question = document.querySelector(`.question-card[data-question="${questionNumber}"]`);
+                
+                if (question.querySelector('textarea')) {
+                    // Essay question
+                    const textarea = question.querySelector('textarea');
+                    return textarea.value.trim().length > 0;
+                } else {
+                    // Multiple choice question
+                    const radios = question.querySelectorAll('input[type="radio"]');
+                    return Array.from(radios).some(radio => radio.checked);
+                }
+            }
+            
+            // Update answered questions
+            function updateAnsweredQuestions() {
+                for (let i = 1; i <= totalQuestionsCount; i++) {
+                    if (checkIfQuestionAnswered(i)) {
+                        answeredQuestions.add(i);
+                    } else {
+                        answeredQuestions.delete(i);
+                    }
+                }
+                
+                updateProgress();
+                updateQuestionNav();
+            }
+            
+            // Submit exam
+            function submitExam() {
+                // Collect answers
+                const answers = {};
+                
+                questionCards.forEach(card => {
+                    const questionNumber = card.dataset.question;
+                    
+                    if (card.querySelector('textarea')) {
+                        // Essay question
+                        answers[questionNumber] = card.querySelector('textarea').value;
+                    } else {
+                        // Multiple choice question
+                        const selectedOption = card.querySelector('input[type="radio"]:checked');
+                        answers[questionNumber] = selectedOption ? selectedOption.value : null;
+                    }
+                });
+                
+                // Send answers to server (simulated)
+                console.log('Submitting answers:', answers);
+                
+                // Redirect to results page (simulated)
+                alert('Avaliação enviada com sucesso!');
+                window.location.href = 'formando-dashboard.html';
+            }
+            
+            // Event Listeners
+            
+            // Previous button
+            prevBtn.addEventListener('click', function() {
+                goToQuestion(currentQuestion - 1);
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', function() {
+                goToQuestion(currentQuestion + 1);
+            });
+            
+            // Form inputs change
+            examForm.addEventListener('change', function() {
+                updateAnsweredQuestions();
+                
+                // Auto-save answers (simulated)
+                console.log('Auto-saving answers...');
+            });
+            
+            // Submit button
+            examForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Check if all questions are answered
+                if (answeredQuestions.size < totalQuestionsCount) {
+                    unansweredWarning.classList.remove('d-none');
+                } else {
+                    unansweredWarning.classList.add('d-none');
+                }
+                
+                confirmSubmitModal.show();
+            });
+            
+            // Confirm submit button
+            confirmSubmitBtn.addEventListener('click', function() {
+                confirmSubmitModal.hide();
+                submitExam();
+            });
+            
+            // Return to fullscreen button
+            returnToFullscreenBtn.addEventListener('click', function() {
+                requestFullscreen();
+                fullscreenWarning.classList.add('d-none');
+            });
+            
+            // Fullscreen change event
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            function handleFullscreenChange() {
+                if (!document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.msFullscreenElement) {
+                    
+                    // Show warning when exiting fullscreen
+                    if (isFullscreen) {
+                        fullscreenWarning.classList.remove('d-none');
+                        isFullscreen = false;
+                    }
+                } else {
+                    fullscreenWarning.classList.add('d-none');
+                    isFullscreen = true;
+                }
+            }
+            
+            // Prevent tab switching
+            window.addEventListener('blur', function() {
+                // Show warning when switching tabs
+                fullscreenWarning.classList.remove('d-none');
+            });
+            
+            window.addEventListener('focus', function() {
+                // Hide warning when returning to tab
+                if (isFullscreen) {
+                    fullscreenWarning.classList.add('d-none');
+                }
+            });
+            
+            // Prevent right-click
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Prevent keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Prevent Ctrl+C, Ctrl+V, Ctrl+P, F12, Alt+Tab
+                if ((e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'p')) || 
+                    e.key === 'F12' || 
+                    (e.altKey && e.key === 'Tab')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

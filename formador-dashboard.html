@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Formador - Ubuntu</title>
+    <!-- Meta tag para acessibilidade -->
+    <meta name="description" content="Painel do Formador da plataforma Ubuntu de cursos online">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js">
+    <style>
+        :root {
+            --primary-color: #003A5A; /* Azul Cisco mais escuro */
+            --secondary-color: #00507A; /* Azul secundário Cisco mais escuro */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #3A7A3A; /* Verde Cisco mais escuro */
+            --warning-color: #D99000; /* Amarelo Cisco mais escuro */
+            --danger-color: #C01A15; /* Vermelho Cisco mais escuro */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 250px;
+            max-width: 400px;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+            resize: none;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .menu-header,
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Stats Card */
+        .stats-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(0, 80, 115, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .stat-icon.warning {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .stat-icon.danger {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .stat-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .stat-content p {
+            margin-bottom: 0;
+            color: var(--light-text);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Course Card */
+        .course-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .course-image {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .course-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .course-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .course-info {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Activity List */
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .activity-icon.lecture {
+            background-color: rgba(0, 80, 115, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .activity-icon.quiz {
+            background-color: rgba(0, 150, 214, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .activity-icon.assignment {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .activity-content {
+            flex-grow: 1;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--light-text);
+        }
+        
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-toggle:hover {
+            color: white;
+        }
+        
+        .sidebar.collapsed .sidebar-toggle {
+            transform: rotate(180deg);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* Badges */
+        .badge.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--success-color) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--danger-color) !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                resize: none;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.pushed {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+    /* Melhorar indicadores de foco para acessibilidade */
+    a:focus, button:focus, input:focus, select:focus, textarea:focus, .btn:focus {
+        outline: 3px solid rgba(0, 80, 115, 0.4) !important;
+        outline-offset: 2px;
+    }
+    
+    /* Melhorar contraste de texto para acessibilidade */
+    .text-muted {
+        color: #5a6268 !important;
+    }
+    
+    /* Melhorar responsividade em telas muito pequenas */
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 15px 10px;
+        }
+        
+        .stat-card {
+            padding: 15px 10px;
+        }
+        
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            margin-right: 10px;
+        }
+    }
+    
+    /* Melhorar organização de conteúdo em telas médias */
+    @media (max-width: 768px) {
+        .course-card {
+            margin-bottom: 15px;
+        }
+    }
+    
+    /* Ajustar sidebar em telas pequenas */
+    @media (max-width: 992px) {
+        .sidebar {
+            transform: translateX(-100%);
+            position: fixed;
+            z-index: 1050;
+            width: 250px;
+        }
+        
+        .sidebar.show {
+            transform: translateX(0);
+        }
+    }
+    
+    /* Adicionar overlay quando o menu estiver aberto em dispositivos móveis */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+    }
+    
+    .sidebar-overlay.show {
+        display: block;
+    }
+    
+    /* Melhorar organização com dropdown aninhados */
+    .nested-dropdown {
+        padding-left: 35px;
+    }
+    
+    /* Melhorar visualização de conteúdo em dispositivos móveis */
+    .mobile-scroll {
+        overflow-x: auto;
+    }
+</style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formador</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Recolher menu lateral">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Gestão</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link active" data-bs-toggle="tab" aria-current="page">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#cursos" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-book"></i> <span>Meus Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#turmas" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-people"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#alunos" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-person-badge"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conteúdo</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#materiais" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#avaliacoes" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#quizzes" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-question-circle"></i> <span>Quizzes</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Comunicação</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#mensagens" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-chat-dots"></i> <span>Mensagens</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#forum" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-chat-square-text"></i> <span>Fórum</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#anuncios" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-megaphone"></i> <span>Anúncios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Relatórios</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#estatisticas" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-graph-up"></i> <span>Estatísticas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#progresso" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-bar-chart"></i> <span>Progresso</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#certificados" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-award"></i> <span>Certificados</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#configuracoes" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="formador-permissoes.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i> <span>Permissões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <form class="search-form d-none d-md-block">
+                <input type="search" placeholder="Pesquisar cursos, alunos, materiais..." class="form-control">
+            </form>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+                    <img src="https://via.placeholder.com/36" alt="Formador">
+                    <span class="d-none d-md-inline-block">Carlos Oliveira</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#perfil" data-bs-toggle="tab"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#configuracoes" data-bs-toggle="tab"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="tab-content">
+                <!-- Dashboard Tab -->
+                <div class="tab-pane fade show active" id="dashboard">
+                    <h1 class="page-title">Dashboard do Formador</h1>
+                    
+                    <div class="stats-container">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon primary">
+                                        <i class="bi bi-book"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>5</h3>
+                                        <p>Cursos Ativos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon success">
+                                        <i class="bi bi-people"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>87</h3>
+                                        <p>Alunos Ativos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon warning">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>12</h3>
+                                        <p>Avaliações Pendentes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon danger">
+                                        <i class="bi bi-chat-dots"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>8</h3>
+                                        <p>Mensagens Não Lidas</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>Atividade Recente</span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Todos os Cursos
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">Todos os Cursos</a></li>
+                                            <li><a class="dropdown-item" href="#">Introdução ao JavaScript</a></li>
+                                            <li><a class="dropdown-item" href="#">Design Thinking</a></li>
+                                            <li><a class="dropdown-item" href="#">Python para Data Science</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="activity-list">
+                                        <li class="activity-item d-flex">
+                                            <div class="activity-icon lecture">
+                                                <i class="bi bi-person-check"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <h6 class="activity-title">Ricardo Almeida completou o módulo "Funções Avançadas"</h6>
+                                                <p class="activity-time">Hoje, 10:45</p>
+                                            </div>
+                                        </li>
+                                        <li class="activity-item d-flex">
+                                            <div class="activity-icon quiz">
+                                                <i class="bi bi-question-circle"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <h6 class="activity-title">5 alunos completaram o Quiz "Manipulação do DOM"</h6>
+                                                <p class="activity-time">Hoje, 09:30</p>
+                                            </div>
+                                        </li>
+                                        <li class="activity-item d-flex">
+                                            <div class="activity-icon assignment">
+                                                <i class="bi bi-file-earmark-text"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <h6 class="activity-title">3 novos envios de trabalho em "Projeto Final"</h6>
+                                                <p class="activity-time">Ontem, 18:20</p>
+                                            </div>
+                                        </li>
+                                        <li class="activity-item d-flex">
+                                            <div class="activity-icon lecture">
+                                                <i class="bi bi-person-plus"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <h6 class="activity-title">2 novos alunos matriculados em "Python para Data Science"</h6>
+                                                <p class="activity-time">Ontem, 14:15</p>
+                                            </div>
+                                        </li>
+                                        <li class="activity-item d-flex">
+                                            <div class="activity-icon quiz">
+                                                <i class="bi bi-chat-dots"></i>
+                                            </div>
+                                            <div class="activity-content">
+                                                <h6 class="activity-title">Nova pergunta no fórum "Dúvidas sobre Promises"</h6>
+                                                <p class="activity-time">Ontem, 11:30</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Ver Todas as Atividades</a>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Desempenho dos Alunos</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="studentPerformanceChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Próximas Atividades</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Avaliação de Projetos Finais</h6>
+                                                <small>Hoje</small>
+                                            </div>
+                                            <p class="mb-1">Turma JavaScript 2025.1</p>
+                                            <small>5 projetos pendentes</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Aula ao Vivo: Introdução a APIs</h6>
+                                                <small>Amanhã, 14:00</small>
+                                            </div>
+                                            <p class="mb-1">Turma JavaScript 2025.1</p>
+                                            <small>15 alunos confirmados</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Prazo Final: Entrega de Trabalhos</h6>
+                                                <small>Em 2 dias</small>
+                                            </div>
+                                            <p class="mb-1">Turma Design Thinking 2025.1</p>
+                                            <small>8 trabalhos pendentes</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Reunião com Coordenadores</h6>
+                                                <small>Em 3 dias</small>
+                                            </div>
+                                            <p class="mb-1">Planejamento de Novos Cursos</p>
+                                            <small>Virtual - Google Meet</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Mensagens Recentes</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Ricardo Almeida</h6>
+                                                <small class="text-danger">Não lida</small>
+                                            </div>
+                                            <p class="mb-1">Dúvida sobre o projeto final...</p>
+                                            <small>Hoje, 09:45</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Maria Santos</h6>
+                                                <small class="text-danger">Não lida</small>
+                                            </div>
+                                            <p class="mb-1">Solicitação de extensão de prazo...</p>
+                                            <small>Ontem, 18:30</small>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Coordenação Acadêmica</h6>
+                                                <small>Lida</small>
+                                            </div>
+                                            <p class="mb-1">Reunião de planejamento...</p>
+                                            <small>27/02/2025</small>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="#mensagens" class="btn btn-sm btn-outline-primary" data-bs-toggle="tab">Ver Todas as Mensagens</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cursos Tab -->
+                <div class="tab-pane fade" id="cursos">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Meus Cursos</h1>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoCursoModal">
+                            <i class="bi bi-plus-circle me-2"></i>Novo Curso
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="course-card">
+                                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=JavaScript')">
+                                    <span class="course-badge">Ativo</span>
+                                </div>
+                                <div class="course-content">
+                                    <h5 class="course-title">Introdução ao JavaScript</h5>
+                                    <div class="course-info">
+                                        <p><i class="bi bi-people me-2"></i>15 alunos matriculados</p>
+                                        <p><i class="bi bi-calendar3 me-2"></i>Início: 01/02/2025</p>
+                                    </div>
+                                    <div class="d-flex mt-auto">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Gerenciar</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="course-card">
+                                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=Design+Thinking')">
+                                    <span class="course-badge">Ativo</span>
+                                </div>
+                                <div class="course-content">
+                                    <h5 class="course-title">Design Thinking</h5>
+                                    <div class="course-info">
+                                        <p><i class="bi bi-people me-2"></i>12 alunos matriculados</p>
+                                        <p><i class="bi bi-calendar3 me-2"></i>Início: 15/01/2025</p>
+                                    </div>
+                                    <div class="d-flex mt-auto">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Gerenciar</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="course-card">
+                                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=Python')">
+                                    <span class="course-badge">Ativo</span>
+                                </div>
+                                <div class="course-content">
+                                    <h5 class="course-title">Python para Data Science</h5>
+                                    <div class="course-info">
+                                        <p><i class="bi bi-people me-2"></i>8 alunos matriculados</p>
+                                        <p><i class="bi bi-calendar3 me-2"></i>Início: 01/03/2025</p>
+                                    </div>
+                                    <div class="d-flex mt-auto">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Gerenciar</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Acessar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="course-card">
+                                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=React')">
+                                    <span class="course-badge bg-warning">Em Preparação</span>
+                                </div>
+                                <div class="course-content">
+                                    <h5 class="course-title">React: Desenvolvimento Frontend</h5>
+                                    <div class="course-info">
+                                        <p><i class="bi bi-people me-2"></i>0 alunos matriculados</p>
+                                        <p><i class="bi bi-calendar3 me-2"></i>Início: 15/04/2025</p>
+                                    </div>
+                                    <div class="d-flex mt-auto">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Editar</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Publicar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="course-card">
+                                <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=UX/UI')">
+                                    <span class="course-badge bg-secondary">Concluído</span>
+                                </div>
+                                <div class="course-content">
+                                    <h5 class="course-title">Introdução ao UX/UI Design</h5>
+                                    <div class="course-info">
+                                        <p><i class="bi bi-people me-2"></i>18 alunos concluíram</p>
+                                        <p><i class="bi bi-calendar3 me-2"></i>Término: 15/12/2024</p>
+                                    </div>
+                                    <div class="d-flex mt-auto">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Relatório</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Reativar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Turmas Tab -->
+                <div class="tab-pane fade" id="turmas">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Gerenciamento de Turmas</h1>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novaTurmaModal">
+                            <i class="bi bi-plus-circle me-2"></i>Nova Turma
+                        </button>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Turmas Ativas</span>
+                            <div class="input-group" style="max-width: 300px;">
+                                <input type="text" class="form-control" placeholder="Buscar turma...">
+                                <button class="btn btn-outline-primary" type="button"><i class="bi bi-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome da Turma</th>
+                                            <th>Curso</th>
+                                            <th>Período</th>
+                                            <th>Alunos</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>JavaScript 2025.1</td>
+                                            <td>Introdução ao JavaScript</td>
+                                            <td>01/02/2025 - 30/04/2025</td>
+                                            <td>15/20</td>
+                                            <td><span class="badge bg-success">Ativa</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Design Thinking 2025.1</td>
+                                            <td>Design Thinking</td>
+                                            <td>15/01/2025 - 15/03/2025</td>
+                                            <td>12/15</td>
+                                            <td><span class="badge bg-success">Ativa</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Python DS 2025.1</td>
+                                            <td>Python para Data Science</td>
+                                            <td>01/03/2025 - 30/06/2025</td>
+                                            <td>8/25</td>
+                                            <td><span class="badge bg-warning">Inscrições Abertas</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Turmas Concluídas</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome da Turma</th>
+                                            <th>Curso</th>
+                                            <th>Período</th>
+                                            <th>Alunos Concluintes</th>
+                                            <th>Taxa de Conclusão</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>UX/UI 2024.2</td>
+                                            <td>Introdução ao UX/UI Design</td>
+                                            <td>15/09/2024 - 15/12/2024</td>
+                                            <td>18/20</td>
+                                            <td>90%</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-earmark-text"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-success"><i class="bi bi-arrow-repeat"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alunos Tab -->
+                <div class="tab-pane fade" id="alunos">
+                    <h1 class="page-title">Gerenciamento de Alunos</h1>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Alunos Matriculados</span>
+                            <div class="d-flex">
+                                <select class="form-select me-2" style="max-width: 200px;">
+                                    <option selected>Todas as Turmas</option>
+                                    <option>JavaScript 2025.1</option>
+                                    <option>Design Thinking 2025.1</option>
+                                    <option>Python DS 2025.1</option>
+                                </select>
+                                <div class="input-group" style="max-width: 250px;">
+                                    <input type="text" class="form-control" placeholder="Buscar aluno...">
+                                    <button class="btn btn-outline-primary" type="button"><i class="bi bi-search"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Turma</th>
+                                            <th>Progresso</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Ricardo Almeida</td>
+                                            <td>ricardo@email.com</td>
+                                            <td>JavaScript 2025.1</td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small>75%</small>
+                                            </td>
+                                            <td><span class="badge bg-success">Ativo</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-chat"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Maria Santos</td>
+                                            <td>maria@email.com</td>
+                                            <td>Design Thinking 2025.1</td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small>40%</small>
+                                            </td>
+                                            <td><span class="badge bg-success">Ativo</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-chat"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>João Silva</td>
+                                            <td>joao@email.com</td>
+                                            <td>Python DS 2025.1</td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small>20%</small>
+                                            </td>
+                                            <td><span class="badge bg-warning">Pendente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-chat"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <nav aria-label="Paginação de alunos">
+                                <ul class="pagination justify-content-center mt-4">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Próximo</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Adicionar Aluno</span>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="alunoEmail" class="form-label">Email do Aluno</label>
+                                        <input type="email" class="form-control" id="alunoEmail" placeholder="email@exemplo.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="alunoTurma" class="form-label">Turma</label>
+                                        <select class="form-select" id="alunoTurma">
+                                            <option selected>Selecione uma turma</option>
+                                            <option>JavaScript 2025.1</option>
+                                            <option>Design Thinking 2025.1</option>
+                                            <option>Python DS 2025.1</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">Adicionar Aluno</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                 <div class="tab-pane fade" id="avaliacoes">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Gerenciamento de Avaliações</h1>
+                        <div>
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#novaAvaliacaoModal">
+                                <i class="bi bi-plus-circle me-2"></i>Nova Avaliação
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>Acessar Moodle
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Integração com Moodle:</strong> Para avaliações e provas mais complexas, você pode utilizar a integração com o Moodle. Clique em "Acessar Moodle" para gerenciar avaliações avançadas.
+                    </div>
+                    
+                    <!-- Resto do conteúdo da aba de avaliações -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Novo Curso -->
+    <div class="modal fade" id="novoCursoModal" tabindex="-1" aria-labelledby="novoCursoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="novoCursoModalLabel">Criar Novo Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="cursoTitulo" class="form-label">Título do Curso</label>
+                            <input type="text" class="form-control" id="cursoTitulo" placeholder="Ex: Introdução ao JavaScript">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cursoDescricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="cursoDescricao" rows="3" placeholder="Descreva o curso..."></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="cursoCategoria" class="form-label">Categoria</label>
+                                <select class="form-select" id="cursoCategoria">
+                                    <option selected>Selecione uma categoria</option>
+                                    <option>Programação</option>
+                                    <option>Design</option>
+                                    <option>Data Science</option>
+                                    <option>Marketing Digital</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cursoNivel" class="form-label">Nível</label>
+                                <select class="form-select" id="cursoNivel">
+                                    <option selected>Selecione um nível</option>
+                                    <option>Iniciante</option>
+                                    <option>Intermediário</option>
+                                    <option>Avançado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cursoImagem" class="form-label">Imagem de Capa</label>
+                            <input type="file" class="form-control" id="cursoImagem">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Criar Curso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Nova Turma -->
+    <div class="modal fade" id="novaTurmaModal" tabindex="-1" aria-labelledby="novaTurmaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="novaTurmaModalLabel">Criar Nova Turma</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="turmaNome" class="form-label">Nome da Turma</label>
+                            <input type="text" class="form-control" id="turmaNome" placeholder="Ex: JavaScript 2025.2">
+                        </div>
+                        <div class="mb-3">
+                            <label for="turmaCurso" class="form-label">Curso</label>
+                            <select class="form-select" id="turmaCurso">
+                                <option selected>Selecione um curso</option>
+                                <option>Introdução ao JavaScript</option>
+                                <option>Design Thinking</option>
+                                <option>Python para Data Science</option>
+                                <option>React: Desenvolvimento Frontend</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="turmaInicio" class="form-label">Data de Início</label>
+                                <input type="date" class="form-control" id="turmaInicio">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="turmaFim" class="form-label">Data de Término</label>
+                                <input type="date" class="form-control" id="turmaFim">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="turmaCapacidade" class="form-label">Capacidade</label>
+                            <input type="number" class="form-control" id="turmaCapacidade" min="1" value="20">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Criar Turma</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('main-content').classList.toggle('pushed');
+        });
+        
+        // Sidebar Toggle Button
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+        
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Student Performance Chart
+            if (document.getElementById('studentPerformanceChart')) {
+                const ctx = document.getElementById('studentPerformanceChart').getContext('2d');
+                const studentPerformanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['JavaScript 2025.1', 'Design Thinking 2025.1', 'Python DS 2025.1'],
+                        datasets: [{
+                            label: 'Média da Turma (%)',
+                            data: [78, 82, 65],
+                            backgroundColor: [
+                                '#005073',
+                                '#0096D6',
+                                '#58B957'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Média (%)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    // Toggle Sidebar com overlay para mobile
+    document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const body = document.body;
+        
+        sidebar.classList.toggle('show');
+        
+        // Criar ou remover overlay
+        if (sidebar.classList.contains('show')) {
+            if (!document.querySelector('.sidebar-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'sidebar-overlay show';
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    this.remove();
+                });
+                body.appendChild(overlay);
+            }
+        } else {
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (overlay) overlay.remove();
+        }
+    });
+    
+    // Fechar sidebar ao clicar em um item em telas pequenas
+    if (window.innerWidth < 992) {
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.remove('show');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay) overlay.remove();
+            });
+        });
+    }
+    
+    // Adicionar comportamento de dropdown aninhado
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownToggles = document.querySelectorAll('.dropdown-toggle-nested');
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.dataset.target;
+                const content = document.querySelector(target);
+                content.classList.toggle('d-none');
+                this.querySelector('i.bi').classList.toggle('bi-chevron-down');
+                this.querySelector('i.bi').classList.toggle('bi-chevron-up');
+            });
+        });
+    });
+</script>
+</body>
+</html>

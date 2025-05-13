@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração de Notificações - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --admin-color: #2C3E50; /* Cor especial para admin */
+            --admin-accent: #34495E; /* Cor de destaque para admin */
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--admin-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 250px;
+            max-width: 400px;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+            resize: none;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--admin-accent);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .menu-header,
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--admin-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--admin-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Email Template Preview */
+        .email-preview {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            background-color: white;
+            margin-bottom: 20px;
+        }
+        
+        .email-preview-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .email-preview-subject {
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .email-preview-meta {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .email-preview-body {
+            padding: 10px 0;
+        }
+        
+        .email-preview-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 15px;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        /* Email Template Editor */
+        .email-editor {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .email-editor-toolbar {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px;
+        }
+        
+        .email-editor-toolbar button {
+            margin-right: 5px;
+        }
+        
+        .email-editor-content {
+            padding: 15px;
+            min-height: 300px;
+            background-color: white;
+        }
+        
+        /* Variable Tags */
+        .variable-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: 2px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .variable-tag:hover {
+            background-color: #dee2e6;
+        }
+        
+        /* Notification Settings */
+        .notification-setting {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .notification-setting:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .notification-setting-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        /* Test Email */
+        .test-email-form {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Email Log */
+        .email-log-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .email-log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .email-log-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .email-log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .email-log-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .email-log-meta {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .email-log-status {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .email-log-status.sent {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .email-log-status.failed {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .email-log-status.pending {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                resize: none;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.pushed {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Admin</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Administração</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#usuarios" class="nav-link">
+                        <i class="bi bi-people"></i> <span>Usuários</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#formadores" class="nav-link">
+                        <i class="bi bi-person-badge"></i> <span>Formadores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#alunos" class="nav-link">
+                        <i class="bi bi-mortarboard"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Gestão de Cursos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#cursos" class="nav-link">
+                        <i class="bi bi-book"></i> <span>Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#categorias" class="nav-link">
+                        <i class="bi bi-tags"></i> <span>Categorias</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#turmas" class="nav-link">
+                        <i class="bi bi-calendar3"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#materiais" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Financeiro</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-financeira.html" class="nav-link">
+                        <i class="bi bi-cash-stack"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pagamento-admin.html" class="nav-link">
+                        <i class="bi bi-credit-card"></i> <span>Pagamentos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#faturas" class="nav-link">
+                        <i class="bi bi-receipt"></i> <span>Faturas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#relatorios" class="nav-link">
+                        <i class="bi bi-bar-chart"></i> <span>Relatórios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Comunicação</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="email-notificacoes.html" class="nav-link active">
+                        <i class="bi bi-envelope"></i> <span>Notificações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-dots"></i> <span>Mensagens</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-megaphone"></i> <span>Anúncios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Recursos Humanos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-rh.html" class="nav-link">
+                        <i class="bi bi-people-fill"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#professores" class="nav-link">
+                        <i class="bi bi-person-workspace"></i> <span>Professores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#colaboradores" class="nav-link">
+                        <i class="bi bi-person-badge-fill"></i> <span>Colaboradores</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#configuracoes" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-permissoes.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i> <span>Permissões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#logs" class="nav-link">
+                        <i class="bi bi-list-check"></i> <span>Logs do Sistema</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="flex-grow-1">
+                <h5 class="mb-0">Notificações por Email</h5>
+            </div>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Admin">
+                    <span class="d-none d-md-inline-block">Administrador</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#perfil"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#configuracoes"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <h1 class="page-title">Configuração de Notificações por Email</h1>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Configurações de Notificações -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Configurações de Notificações</span>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+                                <i class="bi bi-plus-circle me-1"></i> Novo Template
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Notificação de Pagamento Recebido -->
+                            <div class="notification-setting">
+                                <div class="notification-setting-header">
+                                    <h5 class="notification-setting-title">Pagamento Recebido</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="paymentReceivedSwitch" checked>
+                                        <label class="form-check-label" for="paymentReceivedSwitch">Ativo</label>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Enviado quando um aluno submete um comprovativo de pagamento.</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-success me-2">Automático</span>
+                                        <span class="text-muted">Último envio: Hoje, 14:30</span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#editTemplateModal" data-template="payment-received">
+                                            <i class="bi bi-pencil me-1"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewEmailModal" data-template="payment-received">
+                                            <i class="bi bi-eye me-1"></i> Visualizar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Notificação de Pagamento Aprovado -->
+                            <div class="notification-setting">
+                                <div class="notification-setting-header">
+                                    <h5 class="notification-setting-title">Pagamento Aprovado</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="paymentApprovedSwitch" checked>
+                                        <label class="form-check-label" for="paymentApprovedSwitch">Ativo</label>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Enviado quando um pagamento é aprovado pelo administrador.</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-success me-2">Automático</span>
+                                        <span class="text-muted">Último envio: Hoje, 10:15</span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#editTemplateModal" data-template="payment-approved">
+                                            <i class="bi bi-pencil me-1"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewEmailModal" data-template="payment-approved">
+                                            <i class="bi bi-eye me-1"></i> Visualizar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Notificação de Pagamento Rejeitado -->
+                            <div class="notification-setting">
+                                <div class="notification-setting-header">
+                                    <h5 class="notification-setting-title">Pagamento Rejeitado</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="paymentRejectedSwitch" checked>
+                                        <label class="form-check-label" for="paymentRejectedSwitch">Ativo</label>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Enviado quando um pagamento é rejeitado pelo administrador.</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-success me-2">Automático</span>
+                                        <span class="text-muted">Último envio: Ontem, 16:45</span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#editTemplateModal" data-template="payment-rejected">
+                                            <i class="bi bi-pencil me-1"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewEmailModal" data-template="payment-rejected">
+                                            <i class="bi bi-eye me-1"></i> Visualizar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Lembrete de Pagamento Pendente -->
+                            <div class="notification-setting">
+                                <div class="notification-setting-header">
+                                    <h5 class="notification-setting-title">Lembrete de Pagamento Pendente</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="paymentReminderSwitch" checked>
+                                        <label class="form-check-label" for="paymentReminderSwitch">Ativo</label>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Enviado para lembrar alunos sobre pagamentos pendentes.</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-warning me-2">Agendado</span>
+                                        <span class="text-muted">Frequência: 3 dias antes do vencimento</span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#editTemplateModal" data-template="payment-reminder">
+                                            <i class="bi bi-pencil me-1"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewEmailModal" data-template="payment-reminder">
+                                            <i class="bi bi-eye me-1"></i> Visualizar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recibo de Pagamento -->
+                            <div class="notification-setting">
+                                <div class="notification-setting-header">
+                                    <h5 class="notification-setting-title">Recibo de Pagamento</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="paymentReceiptSwitch" checked>
+                                        <label class="form-check-label" for="paymentReceiptSwitch">Ativo</label>
+                                    </div>
+                                </div>
+                                <p class="text-muted">Enviado após a aprovação do pagamento, contendo o recibo oficial.</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-success me-2">Automático</span>
+                                        <span class="text-muted">Último envio: Hoje, 11:20</span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#editTemplateModal" data-template="payment-receipt">
+                                            <i class="bi bi-pencil me-1"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewEmailModal" data-template="payment-receipt">
+                                            <i class="bi bi-eye me-1"></i> Visualizar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Histórico de Emails -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Histórico de Emails</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Últimos 7 dias
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Hoje</a></li>
+                                    <li><a class="dropdown-item" href="#">Últimos 7 dias</a></li>
+                                    <li><a class="dropdown-item" href="#">Últimos 30 dias</a></li>
+                                    <li><a class="dropdown-item" href="#">Este mês</a></li>
+                                    <li><a class="dropdown-item" href="#">Todos</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Email Log Item 1 -->
+                            <div class="email-log-item">
+                                <div class="email-log-header">
+                                    <div>
+                                        <h6 class="email-log-title">Pagamento Aprovado - Introdução ao JavaScript</h6>
+                                        <p class="email-log-meta">Para: maria.santos@email.com • Hoje, 10:15</p>
+                                    </div>
+                                    <span class="email-log-status sent">Enviado</span>
+                                </div>
+                                <p class="mb-0">Notificação de aprovação de pagamento para o curso "Introdução ao JavaScript".</p>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#viewEmailLogModal" data-log-id="1">
+                                        <i class="bi bi-eye me-1"></i> Detalhes
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal" data-log-id="1">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Reenviar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Log Item 2 -->
+                            <div class="email-log-item">
+                                <div class="email-log-header">
+                                    <div>
+                                        <h6 class="email-log-title">Pagamento Recebido - Python para Data Science</h6>
+                                        <p class="email-log-meta">Para: joao.silva@email.com • Hoje, 09:30</p>
+                                    </div>
+                                    <span class="email-log-status sent">Enviado</span>
+                                </div>
+                                <p class="mb-0">Confirmação de recebimento de comprovativo para o curso "Python para Data Science".</p>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#viewEmailLogModal" data-log-id="2">
+                                        <i class="bi bi-eye me-1"></i> Detalhes
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal" data-log-id="2">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Reenviar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Log Item 3 -->
+                            <div class="email-log-item">
+                                <div class="email-log-header">
+                                    <div>
+                                        <h6 class="email-log-title">Pagamento Rejeitado - UX/UI Design</h6>
+                                        <p class="email-log-meta">Para: ana.costa@email.com • Ontem, 16:45</p>
+                                    </div>
+                                    <span class="email-log-status sent">Enviado</span>
+                                </div>
+                                <p class="mb-0">Notificação de rejeição de pagamento para o curso "UX/UI Design" (Motivo: Comprovativo ilegível).</p>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#viewEmailLogModal" data-log-id="3">
+                                        <i class="bi bi-eye me-1"></i> Detalhes
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal" data-log-id="3">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Reenviar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Log Item 4 -->
+                            <div class="email-log-item">
+                                <div class="email-log-header">
+                                    <div>
+                                        <h6 class="email-log-title">Lembrete de Pagamento - React: Desenvolvimento Frontend</h6>
+                                        <p class="email-log-meta">Para: pedro.oliveira@email.com • 10/03/2025, 08:00</p>
+                                    </div>
+                                    <span class="email-log-status sent">Enviado</span>
+                                </div>
+                                <p class="mb-0">Lembrete de pagamento pendente para o curso "React: Desenvolvimento Frontend".</p>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#viewEmailLogModal" data-log-id="4">
+                                        <i class="bi bi-eye me-1"></i> Detalhes
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal" data-log-id="4">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Reenviar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Log Item 5 -->
+                            <div class="email-log-item">
+                                <div class="email-log-header">
+                                    <div>
+                                        <h6 class="email-log-title">Recibo de Pagamento - HTML & CSS Básico</h6>
+                                        <p class="email-log-meta">Para: lucas.mendes@email.com • 09/03/2025, 14:20</p>
+                                    </div>
+                                    <span class="email-log-status failed">Falha</span>
+                                </div>
+                                <p class="mb-0">Envio de recibo de pagamento para o curso "HTML & CSS Básico".</p>
+                                <p class="text-danger mt-1"><small><i class="bi bi-exclamation-circle me-1"></i>Erro: Endereço de email inválido</small></p>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#viewEmailLogModal" data-log-id="5">
+                                        <i class="bi bi-eye me-1"></i> Detalhes
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal" data-log-id="5">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Reenviar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <nav aria-label="Paginação de histórico de emails">
+                                <ul class="pagination justify-content-center mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Próximo</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Configurações de Email -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <span>Configurações de Email</span>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="emailSender" class="form-label">Nome do Remetente</label>
+                                    <input type="text" class="form-control" id="emailSender" value="Ubuntu Formação Profissional">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailAddress" class="form-label">Email do Remetente</label>
+                                    <input type="email" class="form-control" id="emailAddress" value="notificacoes@ubuntu.edu">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="replyToEmail" class="form-label">Email de Resposta</label>
+                                    <input type="email" class="form-control" id="replyToEmail" value="suporte@ubuntu.edu">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailFooter" class="form-label">Rodapé Padrão</label>
+                                    <textarea class="form-control" id="emailFooter" rows="3">© 2025 Ubuntu Formação Profissional. Todos os direitos reservados.
+Para cancelar o recebimento destes emails, acesse suas preferências de notificação.</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailLogo" class="form-label">Logo</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="emailLogo">
+                                        <button class="btn btn-outline-secondary" type="button">Upload</button>
+                                    </div>
+                                    <div class="form-text">Tamanho recomendado: 200x50px, formato PNG ou JPG.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Cores</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label for="primaryColor" class="form-label small">Cor Primária</label>
+                                            <input type="color" class="form-control form-control-color w-100" id="primaryColor" value="#005073">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="secondaryColor" class="form-label small">Cor Secundária</label>
+                                            <input type="color" class="form-control form-control-color w-100" id="secondaryColor" value="#0096D6">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save me-2"></i>Salvar Configurações
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Enviar Email de Teste -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <span>Enviar Email de Teste</span>
+                        </div>
+                        <div class="card-body">
+                            <form class="test-email-form">
+                                <div class="mb-3">
+                                    <label for="testEmailTemplate" class="form-label">Template</label>
+                                    <select class="form-select" id="testEmailTemplate">
+                                        <option value="payment-received">Pagamento Recebido</option>
+                                        <option value="payment-approved">Pagamento Aprovado</option>
+                                        <option value="payment-rejected">Pagamento Rejeitado</option>
+                                        <option value="payment-reminder">Lembrete de Pagamento</option>
+                                        <option value="payment-receipt">Recibo de Pagamento</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="testEmailAddress" class="form-label">Endereço de Email</label>
+                                    <input type="email" class="form-control" id="testEmailAddress" placeholder="seu@email.com">
+                                </div>
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" id="sendTestEmail">
+                                        <i class="bi bi-send me-2"></i>Enviar Email de Teste
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Variáveis Disponíveis -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Variáveis Disponíveis</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Utilize estas variáveis nos templates para personalizar os emails:</p>
+                            
+                            <h6 class="mb-2">Aluno</h6>
+                            <div class="mb-3">
+                                <span class="variable-tag">{nome_aluno}</span>
+                                <span class="variable-tag">{email_aluno}</span>
+                                <span class="variable-tag">{telefone_aluno}</span>
+                            </div>
+                            
+                            <h6 class="mb-2">Curso</h6>
+                            <div class="mb-3">
+                                <span class="variable-tag">{nome_curso}</span>
+                                <span class="variable-tag">{data_inicio}</span>
+                                <span class="variable-tag">{data_fim}</span>
+                                <span class="variable-tag">{formador}</span>
+                            </div>
+                            
+                            <h6 class="mb-2">Pagamento</h6>
+                            <div class="mb-3">
+                                <span class="variable-tag">{valor_pagamento}</span>
+                                <span class="variable-tag">{data_pagamento}</span>
+                                <span class="variable-tag">{metodo_pagamento}</span>
+                                <span class="variable-tag">{status_pagamento}</span>
+                                <span class="variable-tag">{data_vencimento}</span>
+                                <span class="variable-tag">{motivo_rejeicao}</span>
+                            </div>
+                            
+                            <h6 class="mb-2">Sistema</h6>
+                            <div>
+                                <span class="variable-tag">{data_atual}</span>
+                                <span class="variable-tag">{hora_atual}</span>
+                                <span class="variable-tag">{link_login}</span>
+                                <span class="variable-tag">{link_curso}</span>
+                                <span class="variable-tag">{link_pagamento}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Visualizar Template -->
+    <div class="modal fade" id="previewEmailModal" tabindex="-1" aria-labelledby="previewEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewEmailModalLabel">Visualizar Template de Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="email-preview">
+                        <div class="email-preview-header">
+                            <h5 class="email-preview-subject">Pagamento Aprovado - Introdução ao JavaScript</h5>
+                            <p class="email-preview-meta">
+                                <strong>De:</strong> Ubuntu Formação Profissional &lt;notificacoes@ubuntu.edu&gt;<br>
+                                <strong>Para:</strong> {nome_aluno} &lt;{email_aluno}&gt;<br>
+                                <strong>Assunto:</strong> Pagamento Aprovado - {nome_curso}
+                            </p>
+                        </div>
+                        <div class="email-preview-body">
+                            <p>Olá {nome_aluno},</p>
+                            
+                            <p>Temos o prazer de informar que o seu pagamento para o curso <strong>{nome_curso}</strong> foi aprovado com sucesso!</p>
+                            
+                            <p><strong>Detalhes do Pagamento:</strong></p>
+                            <ul>
+                                <li>Curso: {nome_curso}</li>
+                                <li>Valor: {valor_pagamento}</li>
+                                <li>Data do Pagamento: {data_pagamento}</li>
+                                <li>Método: {metodo_pagamento}</li>
+                            </ul>
+                            
+                            <p>O acesso ao curso já está liberado em sua conta. Para começar a aprender, basta acessar a plataforma com seu login e senha.</p>
+                            
+                            <p style="text-align: center; margin: 30px 0;">
+                                <a href="{link_curso}" style="background-color: #005073; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Acessar o Curso</a>
+                            </p>
+                            
+                            <p>Se tiver qualquer dúvida, não hesite em entrar em contato com nossa equipe de suporte.</p>
+                            
+                            <p>Agradecemos pela confiança e desejamos um excelente aprendizado!</p>
+                            
+                            <p>Atenciosamente,<br>
+                            Equipe Ubuntu Formação Profissional</p>
+                        </div>
+                        <div class="email-preview-footer">
+                            © 2025 Ubuntu Formação Profissional. Todos os direitos reservados.<br>
+                            Para cancelar o recebimento destes emails, acesse suas preferências de notificação.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editTemplateModal">
+                        <i class="bi bi-pencil me-2"></i>Editar Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Editar Template -->
+    <div class="modal fade" id="editTemplateModal" tabindex="-1" aria-labelledby="editTemplateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTemplateModalLabel">Editar Template de Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="templateName" class="form-label">Nome do Template</label>
+                            <input type="text" class="form-control" id="templateName" value="Pagamento Aprovado">
+                        </div>
+                        <div class="mb-3">
+                            <label for="templateSubject" class="form-label">Assunto</label>
+                            <input type="text" class="form-control" id="templateSubject" value="Pagamento Aprovado - {nome_curso}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="templateEditor" class="form-label">Conteúdo</label>
+                            <div class="email-editor">
+                                <div class="email-editor-toolbar">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-underline"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list-ol"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-link"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-image"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-code"></i></button>
+                                </div>
+                                <div class="email-editor-content" contenteditable="true">
+                                    <p>Olá {nome_aluno},</p>
+                                    
+                                    <p>Temos o prazer de informar que o seu pagamento para o curso <strong>{nome_curso}</strong> foi aprovado com sucesso!</p>
+                                    
+                                    <p><strong>Detalhes do Pagamento:</strong></p>
+                                    <ul>
+                                        <li>Curso: {nome_curso}</li>
+                                        <li>Valor: {valor_pagamento}</li>
+                                        <li>Data do Pagamento: {data_pagamento}</li>
+                                        <li>Método: {metodo_pagamento}</li>
+                                    </ul>
+                                    
+                                    <p>O acesso ao curso já está liberado em sua conta. Para começar a aprender, basta acessar a plataforma com seu login e senha.</p>
+                                    
+                                    <p style="text-align: center; margin: 30px 0;">
+                                        <a href="{link_curso}" style="background-color: #005073; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Acessar o Curso</a>
+                                    </p>
+                                    
+                                    <p>Se tiver qualquer dúvida, não hesite em entrar em contato com nossa equipe de suporte.</p>
+                                    
+                                    <p>Agradecemos pela confiança e desejamos um excelente aprendizado!</p>
+                                    
+                                    <p>Atenciosamente,<br>
+                                    Equipe Ubuntu Formação Profissional</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Variáveis Disponíveis</label>
+                            <div>
+                                <span class="variable-tag">{nome_aluno}</span>
+                                <span class="variable-tag">{email_aluno}</span>
+                                <span class="variable-tag">{nome_curso}</span>
+                                <span class="variable-tag">{valor_pagamento}</span>
+                                <span class="variable-tag">{data_pagamento}</span>
+                                <span class="variable-tag">{metodo_pagamento}</span>
+                                <span class="variable-tag">{link_curso}</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Salvar Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Adicionar Template -->
+    <div class="modal fade" id="addTemplateModal" tabindex="-1" aria-labelledby="addTemplateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTemplateModalLabel">Adicionar Novo Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="newTemplateName" class="form-label">Nome do Template</label>
+                            <input type="text" class="form-control" id="newTemplateName" placeholder="Ex: Confirmação de Inscrição">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newTemplateType" class="form-label">Tipo de Notificação</label>
+                            <select class="form-select" id="newTemplateType">
+                                <option value="payment">Pagamento</option>
+                                <option value="course">Curso</option>
+                                <option value="system">Sistema</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newTemplateSubject" class="form-label">Assunto</label>
+                            <input type="text" class="form-control" id="newTemplateSubject" placeholder="Ex: Confirmação de Inscrição - {nome_curso}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newTemplateEditor" class="form-label">Conteúdo</label>
+                            <div class="email-editor">
+                                <div class="email-editor-toolbar">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-type-underline"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list-ol"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-link"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-image"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"><i class="bi bi-code"></i></button>
+                                </div>
+                                <div class="email-editor-content" contenteditable="true">
+                                    <p>Olá {nome_aluno},</p>
+                                    
+                                    <p>Escreva o conteúdo do seu email aqui...</p>
+                                    
+                                    <p>Atenciosamente,<br>
+                                    Equipe Ubuntu Formação Profissional</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Variáveis Disponíveis</label>
+                            <div>
+                                <span class="variable-tag">{nome_aluno}</span>
+                                <span class="variable-tag">{email_aluno}</span>
+                                <span class="variable-tag">{nome_curso}</span>
+                                <span class="variable-tag">{data_atual}</span>
+                                <span class="variable-tag">{link_login}</span>
+                                <span class="variable-tag">{link_curso}</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="newTemplateActive" checked>
+                                <label class="form-check-label" for="newTemplateActive">Ativar este template</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Visualizar Log de Email -->
+    <div class="modal fade" id="viewEmailLogModal" tabindex="-1" aria-labelledby="viewEmailLogModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewEmailLogModalLabel">Detalhes do Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6>Informações do Email</h6>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 150px;">ID</th>
+                                    <td>EMAIL-2025031001</td>
+                                </tr>
+                                <tr>
+                                    <th>Template</th>
+                                    <td>Pagamento Aprovado</td>
+                                </tr>
+                                <tr>
+                                    <th>Destinatário</th>
+                                    <td>Maria Santos (maria.santos@email.com)</td>
+                                </tr>
+                                <tr>
+                                    <th>Assunto</th>
+                                    <td>Pagamento Aprovado - Introdução ao JavaScript</td>
+                                </tr>
+                                <tr>
+                                    <th>Data de Envio</th>
+                                    <td>12/03/2025, 10:15:32</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td><span class="badge bg-success">Enviado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="email-preview">
+                        <div class="email-preview-header">
+                            <h5 class="email-preview-subject">Pagamento Aprovado - Introdução ao JavaScript</h5>
+                            <p class="email-preview-meta">
+                                <strong>De:</strong> Ubuntu Formação Profissional &lt;notificacoes@ubuntu.edu&gt;<br>
+                                <strong>Para:</strong> Maria Santos &lt;maria.santos@email.com&gt;<br>
+                                <strong>Assunto:</strong> Pagamento Aprovado - Introdução ao JavaScript
+                            </p>
+                        </div>
+                        <div class="email-preview-body">
+                            <p>Olá Maria,</p>
+                            
+                            <p>Temos o prazer de informar que o seu pagamento para o curso <strong>Introdução ao JavaScript</strong> foi aprovado com sucesso!</p>
+                            
+                            <p><strong>Detalhes do Pagamento:</strong></p>
+                            <ul>
+                                <li>Curso: Introdução ao JavaScript</li>
+                                <li>Valor: R$ 450,00</li>
+                                <li>Data do Pagamento: 09/03/2025</li>
+                                <li>Método: Depósito Bancário</li>
+                            </ul>
+                            
+                            <p>O acesso ao curso já está liberado em sua conta. Para começar a aprender, basta acessar a plataforma com seu login e senha.</p>
+                            
+                            <p style="text-align: center; margin: 30px 0;">
+                                <a href="https://ubuntu.edu/cursos/javascript" style="background-color: #005073; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Acessar o Curso</a>
+                            </p>
+                            
+                            <p>Se tiver qualquer dúvida, não hesite em entrar em contato com nossa equipe de suporte.</p>
+                            
+                            <p>Agradecemos pela confiança e desejamos um excelente aprendizado!</p>
+                            
+                            <p>Atenciosamente,<br>
+                            Equipe Ubuntu Formação Profissional</p>
+                        </div>
+                        <div class="email-preview-footer">
+                            © 2025 Ubuntu Formação Profissional. Todos os direitos reservados.<br>
+                            Para cancelar o recebimento destes emails, acesse suas preferências de notificação.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resendEmailModal">
+                        <i class="bi bi-arrow-repeat me-2"></i>Reenviar Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Reenviar Email -->
+    <div class="modal fade" id="resendEmailModal" tabindex="-1" aria-labelledby="resendEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resendEmailModalLabel">Reenviar Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você está prestes a reenviar o email:</p>
+                    <p><strong>Assunto:</strong> Pagamento Aprovado - Introdução ao JavaScript</p>
+                    <p><strong>Destinatário:</strong> Maria Santos (maria.santos@email.com)</p>
+                    
+                    <div class="mb-3">
+                        <label for="resendEmailAddress" class="form-label">Endereço de Email</label>
+                        <input type="email" class="form-control" id="resendEmailAddress" value="maria.santos@email.com">
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="editBeforeResend">
+                        <label class="form-check-label" for="editBeforeResend">
+                            Editar antes de reenviar
+                        </label>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>O reenvio será registrado no histórico de emails.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmResend">
+                        <i class="bi bi-send me-2"></i>Reenviar Email
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Sidebar
+            document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('show');
+                document.getElementById('sidebar-overlay').classList.toggle('show');
+            });
+            
+            // Sidebar Toggle Button
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('main-content');
+                
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+            
+            // Sidebar Overlay
+            document.getElementById('sidebar-overlay').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('show');
+                this.classList.remove('show');
+            });
+            
+            // Preview Email Modal
+            const previewEmailModal = document.getElementById('previewEmailModal');
+            if (previewEmailModal) {
+                previewEmailModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const template = button.getAttribute('data-template');
+                    
+                    // Here you would load the template content based on the template ID
+                    console.log('Loading template preview:', template);
+                });
+            }
+            
+            // Edit Template Modal
+            const editTemplateModal = document.getElementById('editTemplateModal');
+            if (editTemplateModal) {
+                editTemplateModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const template = button.getAttribute('data-template');
+                    
+                    // Here you would load the template content for editing
+                    console.log('Loading template for editing:', template);
+                });
+            }
+            
+            // Variable Tags
+            const variableTags = document.querySelectorAll('.variable-tag');
+            variableTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // Get the active editor
+                    const activeEditor = document.querySelector('.email-editor-content[contenteditable="true"]');
+                    if (activeEditor) {
+                        // Insert the variable tag at cursor position
+                        const selection = window.getSelection();
+                        const range = selection.getRangeAt(0);
+                        const tagText = this.textContent;
+                        
+                        range.deleteContents();
+                        range.insertNode(document.createTextNode(tagText));
+                        
+                        // Move cursor to end of inserted text
+                        range.setStartAfter(range.endContainer);
+                        range.setEndAfter(range.endContainer);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        
+                        activeEditor.focus();
+                    }
+                });
+            });
+            
+            // Send Test Email
+            const sendTestEmailBtn = document.getElementById('sendTestEmail');
+            if (sendTestEmailBtn) {
+                sendTestEmailBtn.addEventListener('click', function() {
+                    const template = document.getElementById('testEmailTemplate').value;
+                    const email = document.getElementById('testEmailAddress').value;
+                    
+                    if (!email) {
+                        alert('Por favor, informe um endereço de email válido.');
+                        return;
+                    }
+                    
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+                    
+                    // Simulate sending email
+                    setTimeout(() => {
+                        // Reset button
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-send me-2"></i>Enviar Email de Teste';
+                        
+                        // Show success message
+                        alert(`Email de teste enviado com sucesso para ${email}!`);
+                    }, 1500);
+                });
+            }
+            
+            // Confirm Resend
+            const confirmResendBtn = document.getElementById('confirmResend');
+            if (confirmResendBtn) {
+                confirmResendBtn.addEventListener('click', function() {
+                    const email = document.getElementById('resendEmailAddress').value;
+                    const editBeforeResend = document.getElementById('editBeforeResend').checked;
+                    
+                    if (!email) {
+                        alert('Por favor, informe um endereço de email válido.');
+                        return;
+                    }
+                    
+                    if (editBeforeResend) {
+                        // Close current modal and open edit modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('resendEmailModal'));
+                        modal.hide();
+                        
+                        // Open edit modal (in a real app, you would pass the email data)
+                        const editModal = new bootstrap.Modal(document.getElementById('editTemplateModal'));
+                        editModal.show();
+                        return;
+                    }
+                    
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+                    
+                    // Simulate sending email
+                    setTimeout(() => {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('resendEmailModal'));
+                        modal.hide();
+                        
+                        // Reset button
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-send me-2"></i>Reenviar Email';
+                        
+                        // Show success message
+                        alert(`Email reenviado com sucesso para ${email}!`);
+                        
+                        // Reload page to show updated status
+                        window.location.reload();
+                    }, 1500);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

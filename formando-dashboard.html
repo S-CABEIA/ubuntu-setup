@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Formando - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <style>
+:root {
+    --primary-color: #003A5A; /* Azul Cisco mais escuro */
+    --secondary-color: #00507A; /* Azul secundário Cisco mais escuro */
+    --accent-color: #FFFFFF; /* Branco */
+    --success-color: #3A7A3A; /* Verde Cisco mais escuro */
+    --warning-color: #D99000; /* Amarelo Cisco mais escuro */
+    --danger-color: #C01A15; /* Vermelho Cisco mais escuro */
+    --text-color: #333333;
+    --light-text: #6c757d;
+    --border-color: #e9ecef;
+    --bg-light: #f8f9fa;
+    --bg-dark: #1e1e1e;
+    --sidebar-width: 280px;
+    --header-height: 60px;
+}
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        /* Course Card */
+        .course-card {
+            border-radius: 10px;
+            overflow: hidden;
+            height: 100%;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .course-image {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .course-content {
+            padding: 20px;
+        }
+        
+        .course-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .course-progress {
+            margin-top: 15px;
+        }
+        
+        .progress {
+            height: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .progress-bar {
+            background-color: var(--secondary-color);
+        }
+        
+        /* Chat */
+        .chat-container {
+            height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: var(--bg-light);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        
+        .message-sent {
+            margin-left: auto;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 15px 15px 0 15px;
+        }
+        
+        .message-received {
+            margin-right: auto;
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 15px 15px 15px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .chat-input {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Statistics */
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(0, 80, 115, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        /* Certificate */
+        .certificate-card {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .certificate-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1000;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formando</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Aprendizagem</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#recursos" class="nav-link active" data-bs-toggle="tab">
+                        <i class="bi bi-collection"></i> <span>Recursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#chat" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-chat-dots"></i> <span>Chat</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#avaliacoes" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#desempenho" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-graph-up"></i> <span>Desempenho</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#certificados" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-award"></i> <span>Certificados</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conta</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#perfil" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-person"></i> <span>Meu Perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#configuracoes" class="nav-link" data-bs-toggle="tab">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header mb-4">
+            <button class="btn btn-link text-dark d-md-none me-3" id="toggle-sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="flex-grow-1">
+                <input type="search" class="form-control" placeholder="Pesquisar recursos...">
+            </div>
+            
+            <div class="dropdown ms-3">
+                <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/32" alt="User" class="rounded-circle me-2">
+                    <span>João Silva</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#perfil" data-bs-toggle="tab"><i class="bi bi-person me-2"></i>Perfil</a></li>
+                    <li><a class="dropdown-item" href="#configuracoes" data-bs-toggle="tab"><i class="bi bi-gear me-2"></i>Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content -->
+        <div class="tab-content">
+            <!-- Recursos Tab -->
+            <div class="tab-pane fade show active" id="recursos">
+                <h2 class="mb-4">Meus Cursos</h2>
+                
+                <div class="row">
+                    <!-- Curso em Andamento -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="course-card">
+                            <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=JavaScript')">
+                                <span class="course-badge">Em Andamento</span>
+                            </div>
+                            <div class="course-content">
+                                <h5 class="course-title">Introdução ao JavaScript</h5>
+                                <p class="text-muted">Instrutor: Carlos Oliveira</p>
+                                <div class="course-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 75%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Progresso: 75%</small>
+                                        <small class="text-muted">15/20 aulas</small>
+                                    </div>
+                                </div>
+                                <a href="#" class="btn btn-primary w-100 mt-3">Continuar</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Outro Curso -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="course-card">
+                            <div class="course-image" style="background-image: url('https://via.placeholder.com/400x200?text=Python')">
+                                <span class="course-badge">Em Andamento</span>
+                            </div>
+                            <div class="course-content">
+                                <h5 class="course-title">Python para Data Science</h5>
+                                <p class="text-muted">Instrutor: Ana Silva</p>
+                                <div class="course-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 30%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Progresso: 30%</small>
+                                        <small class="text-muted">6/20 aulas</small>
+                                    </div>
+                                </div>
+                                <a href="#" class="btn btn-primary w-100 mt-3">Continuar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Materiais Recentes -->
+                <h3 class="mt-4 mb-3">Materiais Recentes</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1"><i class="bi bi-file-pdf me-2 text-danger"></i>Introdução a Funções JavaScript</h6>
+                                    <small>Hoje</small>
+                                </div>
+                                <p class="mb-1">Material complementar sobre funções em JavaScript</p>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1"><i class="bi bi-play-circle me-2 text-primary"></i>Aula: Manipulação do DOM</h6>
+                                    <small>Ontem</small>
+                                </div>
+                                <p class="mb-1">Vídeo aula sobre manipulação do DOM em JavaScript</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Tab -->
+            <div class="tab-pane fade" id="chat">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Chat</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="chat-container">
+                            <div class="chat-messages">
+                                <div class="message message-received">
+                                    <div class="message-content">
+                                        Olá! Como posso ajudar?
+                                    </div>
+                                    <small class="text-muted">Carlos Oliveira, 10:30</small>
+                                </div>
+                                <div class="message message-sent">
+                                    <div class="message-content">
+                                        Tenho uma dúvida sobre a última aula de JavaScript
+                                    </div>
+                                    <small class="text-muted">10:32</small>
+                                </div>
+                            </div>
+                            <div class="chat-input">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Digite sua mensagem...">
+                                    <button class="btn btn-primary">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Avaliações Tab -->
+            <div class="tab-pane fade" id="avaliacoes">
+                <h2 class="mb-4">Avaliações</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Avaliações Pendentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Prova: JavaScript Básico</h6>
+                                    <span class="badge bg-warning">Pendente</span>
+                                </div>
+                                <p class="mb-1">Data limite: 15/03/2025</p>
+                                <small class="text-muted">Duração: 2 horas</small>
+                            </a>
+                            <a href="#" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Projeto: Aplicação Web</h6>
+                                    <span class="badge bg-warning">Pendente</span>
+                                </div>
+                                <p class="mb-1">Data limite: 20/03/2025</p>
+                                <small class="text-muted">Projeto Final do Módulo</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Avaliações Concluídas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Avaliação</th>
+                                        <th>Data</th>
+                                        <th>Nota</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Quiz: Variáveis e Tipos</td>
+                                        <td>01/03/2025</td>
+                                        <td>9.5/10</td>
+                                        <td><span class="badge bg-success">Aprovado</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Exercício: Loops</td>
+                                        <td>05/03/2025</td>
+                                        <td>8.0/10</td>
+                                        <td><span class="badge bg-success">Aprovado</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Desempenho Tab -->
+            <div class="tab-pane fade" id="desempenho">
+                <h2 class="mb-4">Desempenho e Estatísticas</h2>
+                
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon primary">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">2</h3>
+                                <p class="mb-0">Cursos Ativos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon success">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">21</h3>
+                                <p class="mb-0">Aulas Concluídas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon primary">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">42h</h3>
+                                <p class="mb-0">Tempo de Estudo</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon success">
+                                <i class="bi bi-trophy"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-1">8.5</h3>
+                                <p class="mb-0">Média Geral</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Progresso nos Cursos</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="progressChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Atividades Recentes</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item mb-3">
+                                        <small class="text-muted">Hoje, 10:30</small>
+                                        <p class="mb-0">Concluiu a aula "Introdução a Funções"</p>
+                                    </div>
+                                    <div class="timeline-item mb-3">
+                                        <small class="text-muted">Ontem, 15:45</small>
+                                        <p class="mb-0">Completou o Quiz "Variáveis e Tipos"</p>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <small class="text-muted">08/03/2025, 14:20</small>
+                                        <p class="mb-0">Iniciou o módulo "JavaScript Avançado"</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Certificados Tab -->
+            <div class="tab-pane fade" id="certificados">
+                <h2 class="mb-4">Certificados</h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="certificate-card">
+                            <div class="certificate-icon">
+                                <i class="bi bi-award"></i>
+                            </div>
+                            <h4>HTML & CSS Básico</h4>
+                            <p class="text-muted">Concluído em 01/02/2025</p>
+                            <p><strong>Nota Final:</strong> 9.5/10</p>
+                            <div class="mt-4">
+                                <a href="#" class="btn btn-primary me-2">
+                                    <i class="bi bi-download me-2"></i>Download
+                                </a>
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="bi bi-share me-2"></i>Compartilhar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">Certificados em Andamento</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item">
+                                        <h6 class="mb-1">Introdução ao JavaScript</h6>
+                                        <div class="progress mt-2" style="height: 8px;">
+                                            <div class="progress-bar" role="progressbar" style="width: 75%"></div>
+                                        </div>
+                                        <small class="text-muted">75% concluído</small>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <h6 class="mb-1">Python para Data Science</h6>
+                                        <div class="progress mt-2" style="height: 8px;">
+                                            <div class="progress-bar" role="progressbar" style="width: 30%"></div>
+                                        </div>
+                                        <small class="text-muted">30% concluído</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Toggle Sidebar on Mobile
+        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+        
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('progressChart')) {
+                  function() {
+            if (document.getElementById('progressChart')) {
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['JavaScript', 'Python'],
+                        datasets: [{
+                            label: 'Progresso (%)',
+                            data: [75, 30],
+                            backgroundColor: [
+                                'rgba(0, 150, 214, 0.8)',
+                                'rgba(88, 185, 87, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(0, 150, 214, 1)',
+                                'rgba(88, 185, 87, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Progresso (%)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+<script>
+// Adicionar após o script existente
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar evento de clique aos botões "Continuar" dos cursos
+    const continuarButtons = document.querySelectorAll('.course-card .btn-primary');
+    continuarButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Redirecionar para a página de materiais do curso
+            const cursoTitulo = this.closest('.course-card').querySelector('.course-title').textContent;
+            if (cursoTitulo.includes('JavaScript')) {
+                window.location.href = 'curso-materiais.html?curso=javascript';
+            } else if (cursoTitulo.includes('Python')) {
+                window.location.href = 'curso-materiais.html?curso=python';
+            } else {
+                window.location.href = 'curso-materiais.html?curso=default';
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

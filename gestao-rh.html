@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Recursos Humanos - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --admin-color: #2C3E50; /* Cor especial para admin */
+            --admin-accent: #34495E; /* Cor de destaque para admin */
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--admin-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 250px;
+            max-width: 400px;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+            resize: none;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--admin-accent);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .menu-header,
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--admin-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--admin-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Stats Card */
+        .stats-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(44, 62, 80, 0.1);
+            color: var(--admin-color);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .stat-icon.warning {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .stat-icon.danger {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .stat-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .stat-content p {
+            margin-bottom: 0;
+            color: var(--light-text);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Buttons */
+        .btn-admin {
+            background-color: var(--admin-color);
+            border-color: var(--admin-color);
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            background-color: var(--admin-accent);
+            border-color: var(--admin-accent);
+            color: white;
+        }
+        
+        .btn-outline-admin {
+            color: var(--admin-color);
+            border-color: var(--admin-color);
+        }
+        
+        .btn-outline-admin:hover {
+            background-color: var(--admin-color);
+            border-color: var(--admin-color);
+            color: white;
+        }
+        
+        /* Badges */
+        .badge.bg-admin {
+            background-color: var(--admin-color) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--success-color) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--danger-color) !important;
+        }
+        
+        /* Staff specific styles */
+        .staff-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .staff-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .staff-item:last-child {
+            border-bottom: none;
+        }
+        
+        .staff-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        
+        .staff-info {
+            flex-grow: 1;
+        }
+        
+        .staff-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .staff-position {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            margin-bottom: 5px;
+        }
+        
+        .staff-details {
+            font-size: 0.85rem;
+            color: var(--light-text);
+        }
+        
+        .staff-status {
+            font-size: 0.85rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+        
+        .staff-status.active {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .staff-status.on-leave {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .staff-status.inactive {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .staff-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .staff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .staff-card-header {
+            position: relative;
+            padding-top: 100%;
+            background-color: var(--bg-light);
+        }
+        
+        .staff-card-avatar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .staff-card-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--admin-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .staff-card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .staff-card-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .staff-card-position {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .staff-card-info {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .staff-card-info i {
+            margin-right: 5px;
+            color: var(--admin-color);
+        }
+        
+        /* Schedule Calendar */
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .calendar th {
+            background-color: var(--bg-light);
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--admin-color);
+        }
+        
+        .calendar td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            height: 100px;
+            vertical-align: top;
+        }
+        
+        .calendar .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .calendar .event {
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .calendar .event.teaching {
+            background-color: rgba(0, 150, 214, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .calendar .event.meeting {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .calendar .event.training {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .calendar .event.leave {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                resize: none;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.pushed {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* Skill Badges */
+        .skill-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            background-color: rgba(44, 62, 80, 0.1);
+            color: var(--admin-color);
+        }
+        
+        /* Performance Rating */
+        .rating {
+            display: inline-block;
+            font-size: 1.2rem;
+            color: var(--warning-color);
+        }
+        
+        /* Contract Status */
+        .contract-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .contract-status.active {
+            background-color: var(--success-color);
+        }
+        
+        .contract-status.expiring {
+            background-color: var(--warning-color);
+        }
+        
+        .contract-status.expired {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Admin</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Administração</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#usuarios" class="nav-link">
+                        <i class="bi bi-people"></i> <span>Usuários</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#formadores" class="nav-link">
+                        <i class="bi bi-person-badge"></i> <span>Formadores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#alunos" class="nav-link">
+                        <i class="bi bi-mortarboard"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Gestão de Cursos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#cursos" class="nav-link">
+                        <i class="bi bi-book"></i> <span>Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#categorias" class="nav-link">
+                        <i class="bi bi-tags"></i> <span>Categorias</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#turmas" class="nav-link">
+                        <i class="bi bi-calendar3"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#materiais" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                        <span class="view-only-badge">Somente Visualização</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Recursos Humanos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-rh.html" class="nav-link active">
+                        <i class="bi bi-people-fill"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#professores" class="nav-link">
+                        <i class="bi bi-person-workspace"></i> <span>Professores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#colaboradores" class="nav-link">
+                        <i class="bi bi-person-badge-fill"></i> <span>Colaboradores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#contratos" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Contratos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#folha-pagamento" class="nav-link">
+                        <i class="bi bi-cash-stack"></i> <span>Folha de Pagamento</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#horarios" class="nav-link">
+                        <i class="bi bi-calendar-week"></i> <span>Horários</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Financeiro</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-financeira.html" class="nav-link">
+                        <i class="bi bi-cash-stack"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#mensalidades" class="nav-link">
+                        <i class="bi bi-credit-card"></i> <span>Mensalidades</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#faturas" class="nav-link">
+                        <i class="bi bi-receipt"></i> <span>Faturas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#relatorios" class="nav-link">
+                        <i class="bi bi-bar-chart"></i> <span>Relatórios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#configuracoes" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-permissoes.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i> <span>Permissões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#logs" class="nav-link">
+                        <i class="bi bi-list-check"></i> <span>Logs do Sistema</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#backup" class="nav-link">
+                        <i class="bi bi-cloud-arrow-up"></i> <span>Backup</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <form class="search-form d-none d-md-block">
+                <input type="search" placeholder="Pesquisar professores, colaboradores..." class="form-control">
+            </form>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Admin">
+                    <span class="d-none d-md-inline-block">Administrador</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#perfil"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#configuracoes"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="tab-content">
+                <!-- Visão Geral Tab -->
+                <div class="tab-pane fade show active" id="visao-geral">
+                    <h1 class="page-title">Gestão de Recursos Humanos</h1>
+                    
+                    <div class="stats-container">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon primary">
+                                        <i class="bi bi-person-workspace"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>18</h3>
+                                        <p>Professores</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon success">
+                                        <i class="bi bi-person-badge-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>12</h3>
+                                        <p>Colaboradores</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon warning">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>3</h3>
+                                        <p>Contratações Recentes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card d-flex align-items-center">
+                                    <div class="stat-icon danger">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h3>2</h3>
+                                        <p>Contratos a Vencer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>Equipe</span>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Todos os Departamentos
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">Todos os Departamentos</a></li>
+                                            <li><a class="dropdown-item" href="#">Tecnologia da Informação</a></li>
+                                            <li><a class="dropdown-item" href="#">Design</a></li>
+                                            <li><a class="dropdown-item" href="#">Administração</a></li>
+                                            <li><a class="dropdown-item" href="#">Saúde</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="staff-list">
+                                        <li class="staff-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/50" alt="Carlos Oliveira" class="staff-avatar">
+                                            <div class="staff-info">
+                                                <h6 class="staff-name">Carlos Oliveira</h6>
+                                                <p class="staff-position">Professor de Desenvolvimento Web</p>
+                                                <p class="staff-details">
+                                                    <i class="bi bi-envelope me-1"></i>carlos@ubuntu.edu
+                                                    <span class="mx-2">|</span>
+                                                    <i class="bi bi-telephone me-1"></i>(11) 98765-4321
+                                                </p>
+                                            </div>
+                                            <span class="staff-status active">Ativo</span>
+                                            <div class="dropdown ms-3">
+                                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>Ver Perfil</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-week me-2"></i>Horários</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li class="staff-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/50" alt="Ana Silva" class="staff-avatar">
+                                            <div class="staff-info">
+                                                <h6 class="staff-name">Ana Silva</h6>
+                                                <p class="staff-position">Professora de Design UX/UI</p>
+                                                <p class="staff-details">
+                                                    <i class="bi bi-envelope me-1"></i>ana@ubuntu.edu
+                                                    <span class="mx-2">|</span>
+                                                    <i class="bi bi-telephone me-1"></i>(11) 98765-1234
+                                                </p>
+                                            </div>
+                                            <span class="staff-status active">Ativo</span>
+                                            <div class="dropdown ms-3">
+                                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>Ver Perfil</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-week me-2"></i>Horários</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li class="staff-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/50" alt="Mariana Costa" class="staff-avatar">
+                                            <div class="staff-info">
+                                                <h6 class="staff-name">Mariana Costa</h6>
+                                                <p class="staff-position">Professora de Data Science</p>
+                                                <p class="staff-details">
+                                                    <i class="bi bi-envelope me-1"></i>mariana@ubuntu.edu
+                                                    <span class="mx-2">|</span>
+                                                    <i class="bi bi-telephone me-1"></i>(11) 98765-5678
+                                                </p>
+                                            </div>
+                                            <span class="staff-status on-leave">Férias</span>
+                                            <div class="dropdown ms-3">
+                                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>Ver Perfil</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-week me-2"></i>Horários</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li class="staff-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/50" alt="Roberto Almeida" class="staff-avatar">
+                                            <div class="staff-info">
+                                                <h6 class="staff-name">Roberto Almeida</h6>
+                                                <p class="staff-position">Coordenador Administrativo</p>
+                                                <p class="staff-details">
+                                                    <i class="bi bi-envelope me-1"></i>roberto@ubuntu.edu
+                                                    <span class="mx-2">|</span>
+                                                    <i class="bi bi-telephone me-1"></i>(11) 98765-9876
+                                                </p>
+                                            </div>
+                                            <span class="staff-status active">Ativo</span>
+                                            <div class="dropdown ms-3">
+                                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>Ver Perfil</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="bi bi-calendar-week me-2"></i>Horários</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i>Remover</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="#" class="btn btn-sm btn-outline-admin">Ver Todos os Colaboradores</a>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Distribuição de Carga Horária</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="workloadChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Aniversariantes do Mês</span>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" alt="User" class="rounded-circle me-3">
+                                            <div>
+                                                <h6 class="mb-0">Ana Silva</h6>
+                                                <small class="text-muted">15 de Março</small>
+                                            </div>
+                                            <span class="badge bg-admin ms-auto">Hoje!</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" alt="User" class="rounded-circle me-3">
+                                            <div>
+                                                <h6 class="mb-0">Pedro Santos</h6>
+                                                <small class="text-muted">20 de Março</small>
+                                            </div>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" alt="User" class="rounded-circle me-3">
+                                            <div>
+                                                <h6 class="mb-0">Juliana Costa</h6>
+                                                <small class="text-muted">28 de Março</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Contratos a Vencer</span>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" alt="User" class="rounded-circle me-3">
+                                            <div>
+                                                <h6 class="mb-0">Ricardo Almeida</h6>
+                                                <small class="text-muted">Vence em 15 dias</small>
+                                            </div>
+                                            <span class="badge bg-warning ms-auto">Urgente</span>
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <img src="https://via.placeholder.com/40" alt="User" class="rounded-circle me-3">
+                                            <div>
+                                                <h6 class="mb-0">Marcos Oliveira</h6>
+                                                <small class="text-muted">Vence em 30 dias</small>
+                                            </div>
+                                            <span class="badge bg-info ms-auto">Atenção</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <a href="#contratos" class="btn btn-sm btn-outline-admin">Ver Todos os Contratos</a>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Ações Rápidas</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#novoColaboradorModal">
+                                            <i class="bi bi-person-plus me-2"></i>Novo Colaborador
+                                        </button>
+                                        <button class="btn btn-outline-admin" data-bs-toggle="modal" data-bs-target="#novoContratoModal">
+                                            <i class="bi bi-file-earmark-text me-2"></i>Novo Contrato
+                                        </button>
+                                        <button class="btn btn-outline-admin" data-bs-toggle="modal" data-bs-target="#folhaPagamentoModal">
+                                            <i class="bi bi-cash-stack me-2"></i>Gerar Folha de Pagamento
+                                        </button>
+                                        <button class="btn btn-outline-admin" data-bs-toggle="modal" data-bs-target="#relatorioRHModal">
+                                            <i class="bi bi-file-earmark-bar-graph me-2"></i>Relatórios de RH
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professores Tab -->
+                <div class="tab-pane fade" id="professores">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Gestão de Professores</h1>
+                        <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#novoProfessorModal">
+                            <i class="bi bi-person-plus me-2"></i>Novo Professor
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="staff-card">
+                                <div class="staff-card-header">
+                                    <img src="https://via.placeholder.com/300" alt="Carlos Oliveira" class="staff-card-avatar">
+                                    <span class="staff-card-badge">Integral</span>
+                                </div>
+                                <div class="staff-card-content">
+                                    <h5 class="staff-card-title">Carlos Oliveira</h5>
+                                    <p class="staff-card-position">Professor de Desenvolvimento Web</p>
+                                    <p class="staff-card-info"><i class="bi bi-envelope"></i> carlos@ubuntu.edu</p>
+                                    <p class="staff-card-info"><i class="bi bi-telephone"></i> (11) 98765-4321</p>
+                                    <p class="staff-card-info"><i class="bi bi-book"></i> 3 Cursos Ativos</p>
+                                    <div class="mt-3">
+                                        <span class="skill-badge">JavaScript</span>
+                                        <span class="skill-badge">React</span>
+                                        <span class="skill-badge">Node.js</span>
+                                    </div>
+                                    <div class="d-flex mt-3">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Perfil</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Horários</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="staff-card">
+                                <div class="staff-card-header">
+                                    <img src="https://via.placeholder.com/300" alt="Ana Silva" class="staff-card-avatar">
+                                    <span class="staff-card-badge">Integral</span>
+                                </div>
+                                <div class="staff-card-content">
+                                    <h5 class="staff-card-title">Ana Silva</h5>
+                                    <p class="staff-card-position">Professora de Design UX/UI</p>
+                                    <p class="staff-card-info"><i class="bi bi-envelope"></i> ana@ubuntu.edu</p>
+                                    <p class="staff-card-info"><i class="bi bi-telephone"></i> (11) 98765-1234</p>
+                                    <p class="staff-card-info"><i class="bi bi-book"></i> 2 Cursos Ativos</p>
+                                    <div class="mt-3">
+                                        <span class="skill-badge">UI Design</span>
+                                        <span class="skill-badge">UX Research</span>
+                                        <span class="skill-badge">Figma</span>
+                                    </div>
+                                    <div class="d-flex mt-3">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Perfil</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Horários</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="staff-card">
+                                <div class="staff-card-header">
+                                    <img src="https://via.placeholder.com/300" alt="Mariana Costa" class="staff-card-avatar">
+                                    <span class="staff-card-badge">Parcial</span>
+                                </div>
+                                <div class="staff-card-content">
+                                    <h5 class="staff-card-title">Mariana Costa</h5>
+                                    <p class="staff-card-position">Professora de Data Science</p>
+                                    <p class="staff-card-info"><i class="bi bi-envelope"></i> mariana@ubuntu.edu</p>
+                                    <p class="staff-card-info"><i class="bi bi-telephone"></i> (11) 98765-5678</p>
+                                    <p class="staff-card-info"><i class="bi bi-book"></i> 1 Curso Ativo</p>
+                                    <div class="mt-3">
+                                        <span class="skill-badge">Python</span>
+                                        <span class="skill-badge">Machine Learning</span>
+                                        <span class="skill-badge">SQL</span>
+                                    </div>
+                                    <div class="d-flex mt-3">
+                                        <a href="#" class="btn btn-outline-primary me-2 flex-grow-1">Perfil</a>
+                                        <a href="#" class="btn btn-primary flex-grow-1">Horários</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Avaliação de Desempenho</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Último Semestre
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Último Semestre</a></li>
+                                    <li><a class="dropdown-item" href="#">Último Ano</a></li>
+                                    <li><a class="dropdown-item" href="#">Todos os Períodos</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Professor</th>
+                                            <th>Cursos</th>
+                                            <th>Avaliação dos Alunos</th>
+                                            <th>Taxa de Conclusão</th>
+                                            <th>Pontualidade</th>
+                                            <th>Avaliação Geral</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Carlos Oliveira</td>
+                                            <td>3</td>
+                                            <td>
+                                                <div class="rating">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-half"></i>
+                                                </div>
+                                                <small>4.5/5</small>
+                                            </td>
+                                            <td>85%</td>
+                                            <td>98%</td>
+                                            <td><span class="badge bg-success">Excelente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-file-earmark-text"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ana Silva</td>
+                                            <td>2</td>
+                                            <td>
+                                                <div class="rating">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star"></i>
+                                                </div>
+                                                <small>4.0/5</small>
+                                            </td>
+                                            <td>80%</td>
+                                            <td>95%</td>
+                                            <td><span class="badge bg-success">Muito Bom</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-file-earmark-text"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mariana Costa</td>
+                                            <td>1</td>
+                                            <td>
+                                                <div class="rating">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <i class="bi bi-star-fill"></i>
+                                                </div>
+                                                <small>4.8/5</small>
+                                            </td>
+                                            <td>90%</td>
+                                            <td>100%</td>
+                                            <td><span class="badge bg-success">Excelente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-file-earmark-text"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contratos Tab -->
+                <div class="tab-pane fade" id="contratos">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Gestão de Contratos</h1>
+                        <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#novoContratoModal">
+                            <i class="bi bi-file-earmark-plus me-2"></i>Novo Contrato
+                        </button>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Contratos Ativos</span>
+                            <div class="d-flex">
+                                <select class="form-select me-2" style="max-width: 200px;">
+                                    <option selected>Todos os Tipos</option>
+                                    <option>CLT</option>
+                                    <option>PJ</option>
+                                    <option>Temporário</option>
+                                </select>
+                                <div class="input-group" style="max-width: 250px;">
+                                    <input type="text" class="form-control" placeholder="Buscar contrato...">
+                                    <button class="btn btn-outline-admin" type="button"><i class="bi bi-search"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Colaborador</th>
+                                            <th>Cargo</th>
+                                            <th>Tipo</th>
+                                            <th>Início</th>
+                                            <th>Término</th>
+                                            <th>Remuneração</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Carlos Oliveira</td>
+                                            <td>Professor de Desenvolvimento Web</td>
+                                            <td>CLT</td>
+                                            <td>01/02/2024</td>
+                                            <td>Indeterminado</td>
+                                            <td>R$ 6.500,00</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="contract-status active"></span>
+                                                    <span>Ativo</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ana Silva</td>
+                                            <td>Professora de Design UX/UI</td>
+                                            <td>CLT</td>
+                                            <td>15/01/2024</td>
+                                            <td>Indeterminado</td>
+                                            <td>R$ 6.200,00</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="contract-status active"></span>
+                                                    <span>Ativo</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mariana Costa</td>
+                                            <td>Professora de Data Science</td>
+                                            <td>PJ</td>
+                                            <td>01/03/2024</td>
+                                            <td>01/03/2025</td>
+                                            <td>R$ 7.000,00</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="contract-status active"></span>
+                                                    <span>Ativo</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ricardo Almeida</td>
+                                            <td>Coordenador Administrativo</td>
+                                            <td>CLT</td>
+                                            <td>01/01/2024</td>
+                                            <td>31/03/2025</td>
+                                            <td>R$ 5.800,00</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="contract-status expiring"></span>
+                                                    <span>A vencer</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-pencil"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Modelos de Contrato</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="bi bi-file-earmark-text me-2"></i>Contrato CLT</h5>
+                                            <p class="card-text">Modelo padrão para contratação em regime CLT.</p>
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin"><i class="bi bi-download"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="bi bi-file-earmark-text me-2"></i>Contrato PJ</h5>
+                                            <p class="card-text">Modelo para prestação de serviços como pessoa jurídica.</p>
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin"><i class="bi bi-download"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="bi bi-file-earmark-text me-2"></i>Contrato Temporário</h5>
+                                            <p class="card-text">Modelo para contratação por tempo determinado.</p>
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin me-2"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-admin"><i class="bi bi-download"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Folha de Pagamento Tab -->
+                <div class="tab-pane fade" id="folha-pagamento">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Folha de Pagamento</h1>
+                        <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#folhaPagamentoModal">
+                            <i class="bi bi-cash-stack me-2"></i>Gerar Folha de Pagamento
+                        </button>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Folha de Pagamento - Março/2025</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Março/2025
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Março/2025</a></li>
+                                    <li><a class="dropdown-item" href="#">Fevereiro/2025</a></li>
+                                    <li><a class="dropdown-item" href="#">Janeiro/2025</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Colaborador</th>
+                                            <th>Cargo</th>
+                                            <th>Salário Base</th>
+                                            <th>Benefícios</th>
+                                            <th>Descontos</th>
+                                            <th>Salário Líquido</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Carlos Oliveira</td>
+                                            <td>Professor de Desenvolvimento Web</td>
+                                            <td>R$ 6.500,00</td>
+                                            <td>R$ 850,00</td>
+                                            <td>R$ 1.950,00</td>
+                                            <td>R$ 5.400,00</td>
+                                            <td><span class="badge bg-success">Pago</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-envelope"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ana Silva</td>
+                                            <td>Professora de Design UX/UI</td>
+                                            <td>R$ 6.200,00</td>
+                                            <td>R$ 850,00</td>
+                                            <td>R$ 1.860,00</td>
+                                            <td>R$ 5.190,00</td>
+                                            <td><span class="badge bg-success">Pago</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-envelope"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mariana Costa</td>
+                                            <td>Professora de Data Science</td>
+                                            <td>R$ 7.000,00</td>
+                                            <td>R$ 0,00</td>
+                                            <td>R$ 0,00</td>
+                                            <td>R$ 7.000,00</td>
+                                            <td><span class="badge bg-success">Pago</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-envelope"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ricardo Almeida</td>
+                                            <td>Coordenador Administrativo</td>
+                                            <td>R$ 5.800,00</td>
+                                            <td>R$ 850,00</td>
+                                            <td>R$ 1.740,00</td>
+                                            <td>R$ 4.910,00</td>
+                                            <td><span class="badge bg-success">Pago</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-printer"></i></button>
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-envelope"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-light">
+                                            <td colspan="2"><strong>Total</strong></td>
+                                            <td><strong>R$ 25.500,00</strong></td>
+                                            <td><strong>R$ 2.550,00</strong></td>
+                                            <td><strong>R$ 5.550,00</strong></td>
+                                            <td><strong>R$ 22.500,00</strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button class="btn btn-outline-admin me-2">
+                                <i class="bi bi-printer me-2"></i>Imprimir Relatório
+                            </button>
+                            <button class="btn btn-outline-admin">
+                                <i class="bi bi-download me-2"></i>Exportar (Excel)
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Evolução da Folha de Pagamento</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="payrollChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Distribuição por Departamento</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="departmentPayrollChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Horários Tab -->
+                <div class="tab-pane fade" id="horarios">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="page-title mb-0">Gestão de Horários</h1>
+                        <div>
+                            <button class="btn btn-outline-admin me-2">
+                                <i class="bi bi-calendar-plus me-2"></i>Novo Evento
+                            </button>
+                            <button class="btn btn-admin">
+                                <i class="bi bi-printer me-2"></i>Imprimir Horários
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Calendário - Março 2025</span>
+                            <div class="d-flex">
+                                <button class="btn btn-sm btn-outline-admin me-2">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-admin me-2">
+                                    Hoje
+                                </button>
+                                <button class="btn btn-sm btn-outline-admin">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="calendar">
+                                <thead>
+                                    <tr>
+                                        <th>Domingo</th>
+                                        <th>Segunda</th>
+                                        <th>Terça</th>
+                                        <th>Quarta</th>
+                                        <th>Quinta</th>
+                                        <th>Sexta</th>
+                                        <th>Sábado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <div class="day-number">1</div>
+                                            <div class="event teaching">JavaScript - Carlos (9h-12h)</div>
+                                            <div class="event meeting">Reunião Pedagógica (14h-16h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">2</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="day-number">3</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">4</div>
+                                            <div class="event teaching">UX/UI - Ana (9h-12h)</div>
+                                            <div class="event teaching">JavaScript - Carlos (14h-17h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">5</div>
+                                            <div class="event teaching">Data Science - Mariana (9h-12h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">6</div>
+                                            <div class="event teaching">JavaScript - Carlos (9h-12h)</div>
+                                            <div class="event meeting">Conselho de Classe (14h-16h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">7</div>
+                                            <div class="event teaching">UX/UI - Ana (9h-12h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">8</div>
+                                            <div class="event teaching">JavaScript - Carlos (9h-12h)</div>
+                                            <div class="event training">Treinamento (14h-17h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">9</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="day-number">10</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">11</div>
+                                            <div class="event teaching">UX/UI - Ana (9h-12h)</div>
+                                            <div class="event teaching">JavaScript - Carlos (14h-17h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">12</div>
+                                            <div class="event teaching">Data Science - Mariana (9h-12h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">13</div>
+                                            <div class="event teaching">JavaScript - Carlos (9h-12h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">14</div>
+                                            <div class="event teaching">UX/UI - Ana (9h-12h)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">15</div>
+                                            <div class="event teaching">JavaScript - Carlos (9h-12h)</div>
+                                            <div class="event leave">Férias - Mariana (Todo o dia)</div>
+                                        </td>
+                                        <td>
+                                            <div class="day-number">16</div>
+                                        </td>
+                                    </tr>
+                                    <!-- Mais linhas do calendário seriam adicionadas aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Carga Horária Semanal por Professor</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Professor</th>
+                                                    <th>Horas Contratadas</th>
+                                                    <th>Horas Alocadas</th>
+                                                    <th>Disponibilidade</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Carlos Oliveira</td>
+                                                    <td>40h</td>
+                                                    <td>32h</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 8px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small>8h disponíveis</small>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Ana Silva</td>
+                                                    <td>40h</td>
+                                                    <td>24h</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 8px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small>16h disponíveis</small>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mariana Costa</td>
+                                                    <td>20h</td>
+                                                    <td>16h</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 8px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <small>4h disponíveis</small>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span>Próximos Eventos</span>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">Reunião Pedagógica</h6>
+                                                <small class="text-muted">15/03/2025, 14:00 - 16:00</small>
+                                            </div>
+                                            <span class="badge bg-warning">Hoje</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">Aula JavaScript - Carlos Oliveira</h6>
+                                                <small class="text-muted">16/03/2025, 09:00 - 12:00</small>
+                                            </div>
+                                            <span class="badge bg-info">Amanhã</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">Treinamento de Novas Tecnologias</h6>
+                                                <small class="text-muted">18/03/2025, 14:00 - 17:00</small>
+                                            </div>
+                                            <span class="badge bg-secondary">Em 3 dias</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">Início das Férias - Mariana Costa</h6>
+                                                <small class="text-muted">20/03/2025 - 04/04/2025</small>
+                                            </div>
+                                            <span class="badge bg-secondary">Em 5 dias</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Novo Colaborador -->
+    <div class="modal fade" id="novoColaboradorModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Novo Colaborador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="staffType" class="form-label">Tipo de Colaborador</label>
+                                <select class="form-select" id="staffType">
+                                    <option selected>Professor</option>
+                                    <option>Administrativo</option>
+                                    <option>Suporte</option>
+                                    <option>Coordenação</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="department" class="form-label">Departamento</label>
+                                <select class="form-select" id="department">
+                                    <option selected>Tecnologia da Informação</option>
+                                    <option>Design</option>
+                                    <option>Administração</option>
+                                    <option>Saúde</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">Nome</label>
+                                <input type="text" class="form-control" id="firstName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Sobrenome</label>
+                                <input type="text" class="form-control" id="lastName">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Telefone</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="position" class="form-label">Cargo</label>
+                                <input type="text" class="form-control" id="position">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="startDate" class="form-label">Data de Início</label>
+                                <input type="date" class="form-control" id="startDate">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="contractType" class="form-label">Tipo de Contrato</label>
+                                <select class="form-select" id="contractType">
+                                    <option selected>CLT</option>
+                                    <option>PJ</option>
+                                    <option>Temporário</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="salary" class="form-label">Salário Base</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number" class="form-control" id="salary" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="skills" class="form-label">Habilidades/Especialidades</label>
+                            <input type="text" class="form-control" id="skills" placeholder="Ex: JavaScript, React, Node.js">
+                            <div class="form-text">Separe as habilidades por vírgulas.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-admin">Adicionar Colaborador</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Novo Contrato -->
+    <div class="modal fade" id="novoContratoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="contractEmployee" class="form-label">Colaborador</label>
+                            <select class="form-select" id="contractEmployee">
+                                <option selected>Selecione um colaborador</option>
+                                <option>Carlos Oliveira</option>
+                                <option>Ana Silva</option>
+                                <option>Mariana Costa</option>
+                                <option>Ricardo Almeida</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contractType" class="form-label">Tipo de Contrato</label>
+                            <select class="form-select" id="contractType">
+                                <option selected>CLT</option>
+                                <option>PJ</option>
+                                <option>Temporário</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="contractStart" class="form-label">Data de Início</label>
+                                <input type="date" class="form-control" id="contractStart">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="contractEnd" class="form-label">Data de Término</label>
+                                <input type="date" class="form-control" id="contractEnd">
+                                <div class="form-text">Deixe em branco para contratos por tempo indeterminado.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contractSalary" class="form-label">Remuneração</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="contractSalary" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contractBenefits" class="form-label">Benefícios</label>
+                            <textarea class="form-control" id="contractBenefits" rows="3" placeholder="Ex: Vale Refeição, Plano de Saúde, etc."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contractWorkload" class="form-label">Carga Horária Semanal</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="contractWorkload">
+                                <span class="input-group-text">horas</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contractTemplate" class="form-label">Modelo de Contrato</label>
+                            <select class="form-select" id="contractTemplate">
+                                <option selected>Contrato CLT</option>
+                                <option>Contrato PJ</option>
+                                <option>Contrato Temporário</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-admin">Gerar Contrato</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Folha de Pagamento -->
+    <div class="modal fade" id="folhaPagamentoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Gerar Folha de Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="payrollMonth" class="form-label">Mês de Referência</label>
+                            <select class="form-select" id="payrollMonth">
+                                <option selected>Março/2025</option>
+                                <option>Abril/2025</option>
+                                <option>Maio/2025</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="payrollDepartment" class="form-label">Departamento</label>
+                            <select class="form-select" id="payrollDepartment">
+                                <option selected>Todos os Departamentos</option>
+                                <option>Tecnologia da Informação</option>
+                                <option>Design</option>
+                                <option>Administração</option>
+                                <option>Saúde</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="payrollType" class="form-label">Tipo de Contrato</label>
+                            <select class="form-select" id="payrollType">
+                                <option selected>Todos os Tipos</option>
+                                <option>CLT</option>
+                                <option>PJ</option>
+                                <option>Temporário</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="payrollDate" class="form-label">Data de Pagamento</label>
+                            <input type="date" class="form-control" id="payrollDate">
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="includeBonus" checked>
+                            <label class="form-check-label" for="includeBonus">
+                                Incluir bonificações e horas extras
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="sendPayslips" checked>
+                            <label class="form-check-label" for="sendPayslips">
+                                Enviar holerites por e-mail
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-admin">Gerar Folha</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Relatório RH -->
+    <div class="modal fade" id="relatorioRHModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Gerar Relatório de RH</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="reportType" class="form-label">Tipo de Relatório</label>
+                            <select class="form-select" id="reportType">
+                                <option selected>Quadro de Funcionários</option>
+                                <option>Folha de Pagamento</option>
+                                <option>Contratos Ativos</option>
+                                <option>Avaliação de Desempenho</option>
+                                <option>Turnover</option>
+                                <option>Carga Horária</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reportPeriod" class="form-label">Período</label>
+                            <select class="form-select" id="reportPeriod">
+                                <option selected>Mês Atual</option>
+                                <option>Mês Anterior</option>
+                                <option>Último Trimestre</option>
+                                <option>Último Semestre</option>
+                                <option>Último Ano</option>
+                                <option>Personalizado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row mb-3 d-none" id="customDateRange">
+                            <div class="col-md-6">
+                                <label for="reportStartDate" class="form-label">Data Inicial</label>
+                                <input type="date" class="form-control" id="reportStartDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="reportEndDate" class="form-label">Data Final</label>
+                                <input type="date" class="form-control" id="reportEndDate">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reportDepartment" class="form-label">Departamento</label>
+                            <select class="form-select" id="reportDepartment">
+                                <option selected>Todos os Departamentos</option>
+                                <option>Tecnologia da Informação</option>
+                                <option>Design</option>
+                                <option>Administração</option>
+                                <option>Saúde</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reportFormat" class="form-label">Formato</label>
+                            <select class="form-select" id="reportFormat">
+                                <option selected>PDF</option>
+                                <option>Excel</option>
+                                <option>CSV</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-admin">Gerar Relatório</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebar-overlay').classList.toggle('show');
+        });
+        
+        // Sidebar Toggle Button
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+        
+        // Sidebar Overlay
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('show');
+            this.classList.remove('show');
+        });
+        
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Workload Chart
+            if (document.getElementById('workloadChart')) {
+                const ctx = document.getElementById('workloadChart').getContext('2d');
+                const workloadChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Carlos Oliveira', 'Ana Silva', 'Mariana Costa', 'Ricardo Almeida', 'Outros Professores'],
+                        datasets: [{
+                            label: 'Horas Semanais',
+                            data: [32, 24, 16, 40, 120],
+                            backgroundColor: [
+                                '#2C3E50',
+                                '#0096D6',
+                                '#58B957',
+                                '#F2AF00',
+                                '#E2231A'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Horas Semanais'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Payroll Chart
+            if (document.getElementById('payrollChart')) {
+                const ctx = document.getElementById('payrollChart').getContext('2d');
+                const payrollChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+                        datasets: [{
+                            label: 'Folha de Pagamento (R$)',
+                            data: [20000, 21500, 22000, 23500, 24000, 25500],
+                            borderColor: '#2C3E50',
+                            backgroundColor: 'rgba(44, 62, 80, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'R$ ' + value.toLocaleString('pt-BR');
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': R$ ' + context.raw.toLocaleString('pt-BR');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Department Payroll Chart
+            if (document.getElementById('departmentPayrollChart')) {
+                const ctx = document.getElementById('departmentPayrollChart').getContext('2d');
+                const departmentPayrollChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Tecnologia da Informação', 'Design', 'Administração', 'Saúde'],
+                        datasets: [{
+                            data: [12000, 5500, 4500, 3500],
+                            backgroundColor: [
+                                '#2C3E50',
+                                '#0096D6',
+                                '#58B957',
+                                '#F2AF00'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return label + ': R$ ' + value.toLocaleString('pt-BR') + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Custom Date Range for Reports
+            const reportPeriod = document.getElementById('reportPeriod');
+            const customDateRange = document.getElementById('customDateRange');
+            
+            if (reportPeriod) {
+                reportPeriod.addEventListener('change', function() {
+                    if (this.value === 'Personalizado') {
+                        customDateRange.classList.remove('d-none');
+                    } else {
+                        customDateRange.classList.add('d-none');
+                    }
+                });
+            }
+            
+            // Tab Navigation via URL hash
+            const hash = window.location.hash;
+            if (hash) {
+                const tabId = hash.substring(1); // remove the # character
+                const tabElement = document.getElementById(tabId);
+                
+                if (tabElement) {
+                    const tab = new bootstrap.Tab(document.querySelector(`a[href="#${tabId}"]`));
+                    tab.show();
+                }
+            }
+            
+            // Update hash on tab change
+            const tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
+            tabLinks.forEach(tabLink => {
+                tabLink.addEventListener('shown.bs.tab', function (e) {
+                    const id = e.target.getAttribute('href').substring(1);
+                    window.location.hash = id;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

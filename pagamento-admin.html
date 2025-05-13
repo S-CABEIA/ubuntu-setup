@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Pagamentos - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+            --admin-color: #2C3E50; /* Cor especial para admin */
+            --admin-accent: #34495E; /* Cor de destaque para admin */
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--admin-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 250px;
+            max-width: 400px;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+            resize: none;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--admin-accent);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .menu-header,
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--admin-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--admin-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Stats Card */
+        .stats-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(44, 62, 80, 0.1);
+            color: var(--admin-color);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .stat-icon.warning {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .stat-icon.danger {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .stat-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .stat-content p {
+            margin-bottom: 0;
+            color: var(--light-text);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Payment Item */
+        .payment-item {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .payment-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--admin-color);
+        }
+        
+        .payment-meta {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .payment-status {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .payment-status.pending {
+            background-color: rgba(242, 175, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .payment-status.approved {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .payment-status.rejected {
+            background-color: rgba(226, 35, 26, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .payment-details {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .payment-info {
+            flex-grow: 1;
+        }
+        
+        .payment-info-item {
+            margin-bottom: 5px;
+        }
+        
+        .payment-info-label {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .payment-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 5px;
+            object-fit: cover;
+            margin-left: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .payment-preview:hover {
+            transform: scale(1.05);
+        }
+        
+        .payment-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Buttons */
+        .btn-admin {
+            background-color: var(--admin-color);
+            border-color: var(--admin-color);
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            background-color: var(--admin-accent);
+            border-color: var(--admin-accent);
+            color: white;
+        }
+        
+        .btn-outline-admin {
+            color: var(--admin-color);
+            border-color: var(--admin-color);
+        }
+        
+        .btn-outline-admin:hover {
+            background-color: var(--admin-color);
+            border-color: var(--admin-color);
+            color: white;
+        }
+        
+        /* Badges */
+        .badge.bg-admin {
+            background-color: var(--admin-color) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--success-color) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--warning-color) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--danger-color) !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                resize: none;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.pushed {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* Payment Preview Modal */
+        .payment-preview-modal {
+            max-width: 90%;
+            max-height: 90vh;
+        }
+        
+        /* Filter Dropdown */
+        .filter-dropdown {
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Admin</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Administração</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#usuarios" class="nav-link">
+                        <i class="bi bi-people"></i> <span>Usuários</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#formadores" class="nav-link">
+                        <i class="bi bi-person-badge"></i> <span>Formadores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#alunos" class="nav-link">
+                        <i class="bi bi-mortarboard"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Gestão de Cursos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#cursos" class="nav-link">
+                        <i class="bi bi-book"></i> <span>Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#categorias" class="nav-link">
+                        <i class="bi bi-tags"></i> <span>Categorias</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#turmas" class="nav-link">
+                        <i class="bi bi-calendar3"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#materiais" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                        <span class="view-only-badge">Somente Visualização</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Financeiro</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-financeira.html" class="nav-link">
+                        <i class="bi bi-cash-stack"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="pagamento-admin.html" class="nav-link active">
+                        <i class="bi bi-credit-card"></i> <span>Pagamentos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#faturas" class="nav-link">
+                        <i class="bi bi-receipt"></i> <span>Faturas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-financeira.html#relatorios" class="nav-link">
+                        <i class="bi bi-bar-chart"></i> <span>Relatórios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Recursos Humanos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gestao-rh.html" class="nav-link">
+                        <i class="bi bi-people-fill"></i> <span>Visão Geral</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#professores" class="nav-link">
+                        <i class="bi bi-person-workspace"></i> <span>Professores</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="gestao-rh.html#colaboradores" class="nav-link">
+                        <i class="bi bi-person-badge-fill"></i> <span>Colaboradores</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#configuracoes" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-permissoes.html" class="nav-link">
+                        <i class="bi bi-shield-lock"></i> <span>Permissões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin-dashboard.html#logs" class="nav-link">
+                        <i class="bi bi-list-check"></i> <span>Logs do Sistema</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <form class="search-form d-none d-md-block">
+                <input type="search" placeholder="Pesquisar pagamentos..." class="form-control">
+            </form>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Admin">
+                    <span class="d-none d-md-inline-block">Administrador</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#perfil"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#configuracoes"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="index.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <h1 class="page-title">Gestão de Pagamentos</h1>
+            
+            <div class="stats-container">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon warning">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>12</h3>
+                                <p>Pagamentos Pendentes</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon success">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>45</h3>
+                                <p>Pagamentos Aprovados</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon danger">
+                                <i class="bi bi-x-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>5</h3>
+                                <p>Pagamentos Rejeitados</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card d-flex align-items-center">
+                            <div class="stat-icon primary">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>R$ 28.500</h3>
+                                <p>Total Recebido (Mês)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Pagamentos Pendentes</span>
+                    <div class="d-flex">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Filtrar por Curso
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end filter-dropdown">
+                                <li><a class="dropdown-item" href="#">Todos os Cursos</a></li>
+                                <li><a class="dropdown-item" href="#">Introdução ao JavaScript</a></li>
+                                <li><a class="dropdown-item" href="#">Python para Data Science</a></li>
+                                <li><a class="dropdown-item" href="#">React: Desenvolvimento Frontend</a></li>
+                                <li><a class="dropdown-item" href="#">HTML & CSS Básico</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Ordenar por
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">Mais Recentes</a></li>
+                                <li><a class="dropdown-item" href="#">Mais Antigos</a></li>
+                                <li><a class="dropdown-item" href="#">Valor (Maior-Menor)</a></li>
+                                <li><a class="dropdown-item" href="#">Valor (Menor-Maior)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Payment Item 1 -->
+                    <div class="payment-item">
+                        <div class="payment-header">
+                            <div>
+                                <h5 class="payment-title">Python para Data Science</h5>
+                                <p class="payment-meta">João Silva • 10/03/2025 • R$ 500,00</p>
+                            </div>
+                            <span class="payment-status pending">Pendente</span>
+                        </div>
+                        <div class="payment-details">
+                            <div class="payment-info">
+                                <p class="payment-info-item"><span class="payment-info-label">Data do Pagamento:</span> 10/03/2025</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Método:</span> Transferência Bancária</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Enviado em:</span> 10/03/2025, 14:30</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Observações:</span> Pagamento realizado via PIX</p>
+                            </div>
+                            <img src="https://via.placeholder.com/100" alt="Comprovativo" class="payment-preview" data-bs-toggle="modal" data-bs-target="#previewModal" data-img="https://via.placeholder.com/800x600">
+                        </div>
+                        <div class="payment-actions">
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-payment-id="1" data-student="João Silva" data-course="Python para Data Science">
+                                <i class="bi bi-x-circle me-2"></i>Rejeitar
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" data-payment-id="1" data-student="João Silva" data-course="Python para Data Science">
+                                <i class="bi bi-check-circle me-2"></i>Aprovar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Item 2 -->
+                    <div class="payment-item">
+                        <div class="payment-header">
+                            <div>
+                                <h5 class="payment-title">Introdução ao JavaScript</h5>
+                                <p class="payment-meta">Maria Santos • 09/03/2025 • R$ 450,00</p>
+                            </div>
+                            <span class="payment-status pending">Pendente</span>
+                        </div>
+                        <div class="payment-details">
+                            <div class="payment-info">
+                                <p class="payment-info-item"><span class="payment-info-label">Data do Pagamento:</span> 09/03/2025</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Método:</span> Depósito Bancário</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Enviado em:</span> 09/03/2025, 16:45</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Observações:</span> Depósito realizado no caixa eletrônico</p>
+                            </div>
+                            <img src="https://via.placeholder.com/100" alt="Comprovativo" class="payment-preview" data-bs-toggle="modal" data-bs-target="#previewModal" data-img="https://via.placeholder.com/800x600">
+                        </div>
+                        <div class="payment-actions">
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-payment-id="2" data-student="Maria Santos" data-course="Introdução ao JavaScript">
+                                <i class="bi bi-x-circle me-2"></i>Rejeitar
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" data-payment-id="2" data-student="Maria Santos" data-course="Introdução ao JavaScript">
+                                <i class="bi bi-check-circle me-2"></i>Aprovar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Item 3 -->
+                    <div class="payment-item">
+                        <div class="payment-header">
+                            <div>
+                                <h5 class="payment-title">React: Desenvolvimento Frontend</h5>
+                                <p class="payment-meta">Pedro Oliveira • 08/03/2025 • R$ 550,00</p>
+                            </div>
+                            <span class="payment-status pending">Pendente</span>
+                        </div>
+                        <div class="payment-details">
+                            <div class="payment-info">
+                                <p class="payment-info-item"><span class="payment-info-label">Data do Pagamento:</span> 08/03/2025</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Método:</span> Transferência Bancária</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Enviado em:</span> 08/03/2025, 10:15</p>
+                                <p class="payment-info-item"><span class="payment-info-label">Observações:</span> Transferência realizada via aplicativo</p>
+                            </div>
+                            <img src="https://via.placeholder.com/100" alt="Comprovativo" class="payment-preview" data-bs-toggle="modal" data-bs-target="#previewModal" data-img="https://via.placeholder.com/800x600">
+                        </div>
+                        <div class="payment-actions">
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal" data-payment-id="3" data-student="Pedro Oliveira" data-course="React: Desenvolvimento Frontend">
+                                <i class="bi bi-x-circle me-2"></i>Rejeitar
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal" data-payment-id="3" data-student="Pedro Oliveira" data-course="React: Desenvolvimento Frontend">
+                                <i class="bi bi-check-circle me-2"></i>Aprovar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <nav aria-label="Paginação de pagamentos">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Próximo</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Histórico de Pagamentos</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Últimos 30 dias
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Últimos 7 dias</a></li>
+                                    <li><a class="dropdown-item" href="#">Últimos 30 dias</a></li>
+                                    <li><a class="dropdown-item" href="#">Últimos 90 dias</a></li>
+                                    <li><a class="dropdown-item" href="#">Este ano</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Aluno</th>
+                                            <th>Curso</th>
+                                            <th>Valor</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>10/03/2025</td>
+                                            <td>João Silva</td>
+                                            <td>Python para Data Science</td>
+                                            <td>R$ 500,00</td>
+                                            <td><span class="badge bg-warning">Pendente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>09/03/2025</td>
+                                            <td>Maria Santos</td>
+                                            <td>Introdução ao JavaScript</td>
+                                            <td>R$ 450,00</td>
+                                            <td><span class="badge bg-warning">Pendente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>08/03/2025</td>
+                                            <td>Pedro Oliveira</td>
+                                            <td>React: Desenvolvimento Frontend</td>
+                                            <td>R$ 550,00</td>
+                                            <td><span class="badge bg-warning">Pendente</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>05/03/2025</td>
+                                            <td>Ana Costa</td>
+                                            <td>UX/UI Design</td>
+                                            <td>R$ 450,00</td>
+                                            <td><span class="badge bg-success">Aprovado</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>03/03/2025</td>
+                                            <td>Lucas Mendes</td>
+                                            <td>HTML & CSS Básico</td>
+                                            <td>R$ 350,00</td>
+                                            <td><span class="badge bg-success">Aprovado</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>01/03/2025</td>
+                                            <td>Juliana Alves</td>
+                                            <td>HTML & CSS Básico</td>
+                                            <td>R$ 350,00</td>
+                                            <td><span class="badge bg-danger">Rejeitado</span></td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-admin"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <span>Resumo Financeiro</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="paymentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Ações Rápidas</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                    <i class="bi bi-download me-2"></i>Exportar Relatório
+                                </button>
+                                <button class="btn btn-outline-admin" data-bs-toggle="modal" data-bs-target="#emailModal">
+                                    <i class="bi bi-envelope me-2"></i>Enviar Lembretes
+                                </button>
+                                <button class="btn btn-outline-admin" data-bs-toggle="modal" data-bs-target="#configModal">
+                                    <i class="bi bi-gear me-2"></i>Configurações de Pagamento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Preview -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Comprovativo de Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="/placeholder.svg" alt="Comprovativo" class="img-fluid" id="previewImage">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Approve -->
+    <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveModalLabel">Aprovar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você está prestes a aprovar o pagamento de <strong id="approveStudent">João Silva</strong> para o curso <strong id="approveCourse">Python para Data Science</strong>.</p>
+                    <p>Ao aprovar, o acesso ao curso será liberado automaticamente para o aluno.</p>
+                    
+                    <div class="mb-3">
+                        <label for="approveNotes" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="approveNotes" rows="3" placeholder="Adicione observações sobre a aprovação..."></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="notifyApprove" checked>
+                        <label class="form-check-label" for="notifyApprove">
+                            Notificar aluno por e-mail
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="confirmApprove">
+                        <i class="bi bi-check-circle me-2"></i>Confirmar Aprovação
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Reject -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Rejeitar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Você está prestes a rejeitar o pagamento de <strong id="rejectStudent">João Silva</strong> para o curso <strong id="rejectCourse">Python para Data Science</strong>.</p>
+                    
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label">Motivo da Rejeição</label>
+                        <select class="form-select" id="rejectReason" required>
+                            <option value="" selected disabled>Selecione o motivo</option>
+                            <option value="invalid">Comprovativo inválido</option>
+                            <option value="illegible">Comprovativo ilegível</option>
+                            <option value="incomplete">Informações incompletas</option>
+                            <option value="wrong_amount">Valor incorreto</option>
+                            <option value="duplicate">Pagamento duplicado</option>
+                            <option value="other">Outro motivo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="rejectNotes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="rejectNotes" rows="3" placeholder="Forneça detalhes sobre o motivo da rejeição..." required></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="notifyReject" checked>
+                        <label class="form-check-label" for="notifyReject">
+                            Notificar aluno por e-mail
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmReject">
+                        <i class="bi bi-x-circle me-2"></i>Confirmar Rejeição
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Export -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">Exportar Relatório de Pagamentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="exportPeriod" class="form-label">Período</label>
+                        <select class="form-select" id="exportPeriod">
+                            <option selected>Últimos 30 dias</option>
+                            <option>Últimos 7 dias</option>
+                            <option>Últimos 90 dias</option>
+                            <option>Este mês</option>
+                            <option>Mês anterior</option>
+                            <option>Este ano</option>
+                            <option>Personalizado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3 d-none" id="customDateRange">
+                        <div class="col-md-6">
+                            <label for="startDate" class="form-label">Data Inicial</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="endDate" class="form-label">Data Final</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exportStatus" class="form-label">Status de Pagamento</label>
+                        <select class="form-select" id="exportStatus">
+                            <option selected>Todos</option>
+                            <option>Aprovados</option>
+                            <option>Pendentes</option>
+                            <option>Rejeitados</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exportFormat" class="form-label">Formato</label>
+                        <select class="form-select" id="exportFormat">
+                            <option selected>Excel (.xlsx)</option>
+                            <option>CSV (.csv)</option>
+                            <option>PDF (.pdf)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="includeDetails" checked>
+                        <label class="form-check-label" for="includeDetails">
+                            Incluir detalhes completos
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-download me-2"></i>Exportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebar-overlay').classList.toggle('show');
+        });
+        
+        // Sidebar Toggle Button
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+        
+        // Sidebar Overlay
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('show');
+            this.classList.remove('show');
+        });
+        
+        // Preview Modal
+        const previewModal = document.getElementById('previewModal');
+        previewModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const imgSrc = button.getAttribute('data-img');
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = imgSrc;
+        });
+        
+        // Approve Modal
+        const approveModal = document.getElementById('approveModal');
+        approveModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const student = button.getAttribute('data-student');
+            const course = button.getAttribute('data-course');
+            const paymentId = button.getAttribute('data-payment-id');
+            
+            document.getElementById('approveStudent').textContent = student;
+            document.getElementById('approveCourse').textContent = course;
+            
+            // Store payment ID for later use
+            document.getElementById('confirmApprove').setAttribute('data-payment-id', paymentId);
+        });
+        
+        // Reject Modal
+        const rejectModal = document.getElementById('rejectModal');
+        rejectModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const student = button.getAttribute('data-student');
+            const course = button.getAttribute('data-course');
+            const paymentId = button.getAttribute('data-payment-id');
+            
+            document.getElementById('rejectStudent').textContent = student;
+            document.getElementById('rejectCourse').textContent = course;
+            
+            // Store payment ID for later use
+            document.getElementById('confirmReject').setAttribute('data-payment-id', paymentId);
+        });
+        
+        // Confirm Approve
+        document.getElementById('confirmApprove').addEventListener('click', function() {
+            const paymentId = this.getAttribute('data-payment-id');
+            const notes = document.getElementById('approveNotes').value;
+            const notify = document.getElementById('notifyApprove').checked;
+            
+            // In a real application, you would send this data to the server
+            console.log('Approving payment:', {
+                paymentId,
+                notes,
+                notify
+            });
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+            
+            // Simulate server request
+            setTimeout(() => {
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(approveModal);
+                modal.hide();
+                
+                // Show success message with email notification
+                if (notify) {
+                    alert('Pagamento aprovado com sucesso! O aluno foi notificado por email e o acesso ao curso foi liberado.');
+                } else {
+                    alert('Pagamento aprovado com sucesso! O acesso ao curso foi liberado.');
+                }
+                
+                // Reset form
+                document.getElementById('approveNotes').value = '';
+                
+                // Reset button
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-check-circle me-2"></i>Confirmar Aprovação';
+                
+                // Reload page to show updated status
+                window.location.reload();
+            }, 1500);
+        });
+        
+        // Confirm Reject
+        document.getElementById('confirmReject').addEventListener('click', function() {
+            const paymentId = this.getAttribute('data-payment-id');
+            const reason = document.getElementById('rejectReason').value;
+            const notes = document.getElementById('rejectNotes').value;
+            const notify = document.getElementById('notifyReject').checked;
+            
+            // Validate form
+            if (!reason) {
+                alert('Por favor, selecione o motivo da rejeição.');
+                return;
+            }
+            
+            if (!notes) {
+                alert('Por favor, forneça observações sobre a rejeição.');
+                return;
+            }
+            
+            // In a real application, you would send this data to the server
+            console.log('Rejecting payment:', {
+                paymentId,
+                reason,
+                notes,
+                notify
+            });
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+            
+            // Simulate server request
+            setTimeout(() => {
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(rejectModal);
+                modal.hide();
+                
+                // Show success message with email notification
+                if (notify) {
+                    alert('Pagamento rejeitado. O aluno foi notificado por email sobre o motivo da rejeição.');
+                } else {
+                    alert('Pagamento rejeitado.');
+                }
+                
+                // Reset form
+                document.getElementById('rejectReason').value = '';
+                document.getElementById('rejectNotes').value = '';
+                
+                // Reset button
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirmar Rejeição';
+                
+                // Reload page to show updated status
+                window.location.reload();
+            }, 1500);
+        });
+        
+        // Custom Date Range for Export
+        const exportPeriod = document.getElementById('exportPeriod');
+        const customDateRange = document.getElementById('customDateRange');
+        
+        if (exportPeriod) {
+            exportPeriod.addEventListener('change', function() {
+                if (this.value === 'Personalizado') {
+                    customDateRange.classList.remove('d-none');
+                } else {
+                    customDateRange.classList.add('d-none');
+                }
+            });
+        }
+        
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Payment Chart
+            if (document.getElementById('paymentChart')) {
+                const ctx = document.getElementById('paymentChart').getContext('2d');
+                const paymentChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Aprovados', 'Pendentes', 'Rejeitados'],
+                        datasets: [{
+                            data: [45, 12, 5],
+                            backgroundColor: [
+                                '#58B957',
+                                '#F2AF00',
+                                '#E2231A'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return label + ': ' + value + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

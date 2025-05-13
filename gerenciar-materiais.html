@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Materiais - Sistema de Formação Profissional</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Course Navigation */
+        .course-nav {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .course-nav-header {
+            padding: 15px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .course-nav-header i {
+            margin-right: 10px;
+        }
+        
+        .course-nav-back {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .course-nav-back:hover {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .course-nav-modules {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .module-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .module-header {
+            padding: 15px 20px;
+            background-color: var(--bg-light);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .module-header:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .module-header.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .module-content {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .lesson-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px 12px 40px;
+            display: flex;
+            align-items: center;
+            background-color: white;
+        }
+        
+        .lesson-item:last-child {
+            border-bottom: none;
+        }
+        
+        .lesson-item.active {
+            background-color: rgba(0,150,214,0.1);
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 36px;
+        }
+        
+        .lesson-icon {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .add-lesson-btn {
+            padding: 10px 20px 10px 40px;
+            color: var(--secondary-color);
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .add-lesson-btn:hover {
+            background-color: rgba(0,150,214,0.05);
+        }
+        
+        .add-lesson-btn i {
+            margin-right: 10px;
+        }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background-color: var(--bg-light);
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--secondary-color);
+            background-color: rgba(0, 150, 214, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+        
+        .upload-hint {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        /* Material Type Selector */
+        .material-type-selector {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .material-type-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .material-type-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        .material-type-btn i {
+            margin-right: 8px;
+        }
+        
+        /* Preview Area */
+        .preview-area {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .preview-area.show {
+            display: block;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .preview-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .preview-content {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .preview-player {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .preview-player video, .preview-player audio {
+            width: 100%;
+        }
+        
+        .preview-document {
+            height: 400px;
+            width: 100%;
+            border: none;
+        }
+        
+        /* Editor */
+        .editor-container {
+            margin-top: 20px;
+        }
+        
+        .editor-toolbar {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .editor-btn {
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .editor-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .editor-content {
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 5px 5px;
+            padding: 15px;
+            min-height: 200px;
+            background-color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1050;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .course-nav-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .course-nav-back {
+                margin-bottom: 10px;
+            }
+            
+            .lesson-item {
+                padding: 12px 15px 12px 30px;
+            }
+            
+            .lesson-item.active {
+                padding-left: 26px;
+            }
+            
+            .add-lesson-btn {
+                padding: 10px 15px 10px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formador</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Gestão</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="formador-dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="bi bi-book"></i> <span>Meus Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-people"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-person-badge"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conteúdo</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-question-circle"></i> <span>Quizzes</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Comunicação</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-dots"></i> <span>Mensagens</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-square-text"></i> <span>Fórum</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-person"></i> <span>Meu Perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Formador">
+                    <span class="d-none d-md-inline-block">Carlos Oliveira</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="login.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="row">
+                <div class="col-lg-4">
+                    <!-- Course Navigation -->
+                    <div class="course-nav">
+                        <div class="course-nav-header">
+                            <a href="#" class="course-nav-back">
+                                <i class="bi bi-arrow-left"></i> Detalhes do curso/UX na prática
+                            </a>
+                        </div>
+                        
+                        <ul class="course-nav-modules">
+                            <li class="module-item">
+                                <div class="module-header active" data-bs-toggle="collapse" data-bs-target="#module1Content">
+                                    <span>01 - Introdução ao UI Design</span>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                                <ul class="module-content collapse show" id="module1Content">
+                                    <li class="lesson-item active">
+                                        <i class="bi bi-file-text lesson-icon"></i> 01 - O que é o UI Design?
+                                    </li>
+                                    <li class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 02 - Como surgiu?
+                                    </li>
+                                    <li class="lesson-item">
+                                        <i class="bi bi-file-text lesson-icon"></i> 03 - Diferença entre UI e UX?
+                                    </li>
+                                    <li>
+                                        <button class="add-lesson-btn">
+                                            <i class="bi bi-plus-circle"></i> Adicionar aula
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module2Content">
+                                    <span>02 - Deletando alguns elementos</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module2Content">
+                                    <li>
+                                        <button class="add-lesson-btn">
+                                            <i class="bi bi-plus-circle"></i> Adicionar aula
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module3Content">
+                                    <span>03 - Deletando alguns elementos</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module3Content">
+                                    <li>
+                                        <button class="add-lesson-btn">
+                                            <i class="bi bi-plus-circle"></i> Adicionar aula
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module4Content">
+                                    <span>04 - Métodos de organização (algoritmos de ordenação)</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="module4Content">
+                                    <li>
+                                        <button class="add-lesson-btn">
+                                            <i class="bi bi-plus-circle"></i> Adicionar aula
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <li class="module-item">
+                                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#moduleEvalContent">
+                                    <span>Avaliação da aula</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </div>
+                                <ul class="module-content collapse" id="moduleEvalContent">
+                                    <li>
+                                        <button class="add-lesson-btn">
+                                            <i class="bi bi-plus-circle"></i> Adicionar avaliação
+                                        </button>
+                                    </li>
+                                </ul>
+                            </li>
+                            
+                            <li>
+                                <button class="add-lesson-btn">
+                                    <i class="bi bi-plus-circle"></i> Adicionar Tema
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-8">
+                    <!-- Material Upload Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Adicionar Material - 01 - O que é o UI Design?</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="material-type-selector">
+                                <button class="material-type-btn active" data-type="document" id="document-btn">
+                                    <i class="bi bi-file-earmark-text"></i> Documento
+                                </button>
+                                <button class="material-type-btn" data-type="audio" id="audio-btn">
+                                    <i class="bi bi-file-earmark-music"></i> Áudio
+                                </button>
+                                <button class="material-type-btn" data-type="video" id="video-btn">
+                                    <i class="bi bi-file-earmark-play"></i> Vídeo
+                                </button>
+                            </div>
+                            
+                            <div class="upload-area" id="upload-area">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5 class="upload-text">Arraste aqui o seu arquivo ou clique em Carregar</h5>
+                                <p class="upload-hint" id="upload-hint">Tamanho máximo do arquivo: 50MB</p>
+                                <input type="file" class="file-input" id="file-input">
+                            </div>
+                            
+                            <div class="preview-area" id="video-preview">
+                                <div class="preview-header">
+                                    <h5 class="preview-title">Pré-visualização do Vídeo</h5>
+                                    <div class="preview-actions">
+                                        <button class="btn btn-sm btn-outline-danger" id="remove-video-btn">
+                                            <i class="bi bi-trash"></i> Remover
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="preview-content">
+                                    <div class="preview-player">
+                                        <video controls width="100%">
+                                            <source src="#" type="video/mp4" id="video-source">
+                                            Seu navegador não suporta a reprodução de vídeos.
+                                        </video>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="preview-area" id="audio-preview">
+                                <div class="preview-header">
+                                    <h5 class="preview-title">Pré-visualização do Áudio</h5>
+                                    <div class="preview-actions">
+                                        <button class="btn btn-sm btn-outline-danger" id="remove-audio-btn">
+                                            <i class="bi bi-trash"></i> Remover
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="preview-content">
+                                    <div class="preview-player">
+                                        <audio controls width="100%">
+                                            <source src="#" type="audio/mpeg" id="audio-source">
+                                            Seu navegador não suporta a reprodução de áudios.
+                                        </audio>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="preview-area" id="document-preview">
+                                <div class="preview-header">
+                                    <h5 class="preview-title">Pré-visualização do Documento</h5>
+                                    <div class="preview-actions">
+                                        <button class="btn btn-sm btn-outline-danger" id="remove-document-btn">
+                                            <i class="bi bi-trash"></i> Remover
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="preview-content">
+                                    <div class="preview-player">
+                                        <iframe src="#" class="preview-document" id="document-frame"></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 mt-4">
+                                <label for="material-title" class="form-label">Adicione um título</label>
+                                <input type="text" class="form-control" id="material-title" placeholder="Escreva alguma coisa ou pressione 'T' para usar um comando...">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="material-description" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="material-description" rows="3" placeholder="Escreva alguma coisa ou pressione 'T' para usar um comando..."></textarea>
+                            </div>
+                            
+                            <div class="editor-container">
+                                <div class="editor-toolbar">
+                                    <button class="editor-btn"><i class="bi bi-type-bold"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-type-italic"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-type-underline"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-list-ul"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-list-ol"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-link"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-image"></i></button>
+                                    <button class="editor-btn"><i class="bi bi-code"></i></button>
+                                </div>
+                                <div class="editor-content" contenteditable="true" id="editor">
+                                    <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
+                                    <p>Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-4">
+                                <button class="btn btn-outline-secondary me-2">Cancelar</button>
+                                <button class="btn btn-primary">Salvar Material</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const sidebar = document.getElementById('sidebar');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const uploadHint = document.getElementById('upload-hint');
+            
+            const videoPreview = document.getElementById('video-preview');
+            const audioPreview = document.getElementById('audio-preview');
+            const documentPreview = document.getElementById('document-preview');
+            
+            const videoSource = document.getElementById('video-source');
+            const audioSource = document.getElementById('audio-source');
+            const documentFrame = document.getElementById('document-frame');
+            
+            const removeVideoBtn = document.getElementById('remove-video-btn');
+            const removeAudioBtn = document.getElementById('remove-audio-btn');
+            const removeDocumentBtn = document.getElementById('remove-document-btn');
+            
+            const materialTypeButtons = document.querySelectorAll('.material-type-btn');
+            
+            // Current material type
+            let currentType = 'document';
+            
+            // Toggle sidebar on mobile
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+            
+            // Module headers toggle
+            document.querySelectorAll('.module-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const isActive = this.classList.contains('active');
+                    
+                    // Remove active class from all headers
+                    document.querySelectorAll('.module-header').forEach(h => {
+                        h.classList.remove('active');
+                        h.querySelector('i').className = 'bi bi-chevron-right';
+                    });
+                    
+                    // If the clicked header wasn't active, make it active
+                    if (!isActive) {
+                        this.classList.add('active');
+                        this.querySelector('i').className = 'bi bi-chevron-down';
+                    }
+                });
+            });
+            
+            // Material type selector
+            materialTypeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    materialTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentType = this.getAttribute('data-type');
+                    
+                    // Update upload hint based on material type
+                    updateUploadHint();
+                    
+                    // Hide all previews
+                    videoPreview.classList.remove('show');
+                    audioPreview.classList.remove('show');
+                    documentPreview.classList.remove('show');
+                });
+            });
+            
+            // Update upload hint based on material type
+            function updateUploadHint() {
+                switch(currentType) {
+                    case 'document':
+                        uploadHint.textContent = 'Formatos aceitos: PDF, DOCX, TXT (máx. 50MB)';
+                        fileInput.accept = '.pdf,.docx,.txt';
+                        break;
+                    case 'audio':
+                        uploadHint.textContent = 'Formatos aceitos: MP3, WAV, OGG (máx. 100MB)';
+                        fileInput.accept = '.mp3,.wav,.ogg';
+                        break;
+                    case 'video':
+                        uploadHint.textContent = 'Formatos aceitos: MP4, WEBM, MOV (máx. 500MB)';
+                        fileInput.accept = '.mp4,.webm,.mov';
+                        break;
+                }
+            }
+            
+            // Upload area click handler
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Drag and drop handlers
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // File input change handler
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    handleFile(this.files[0]);
+                }
+            });
+            
+            // Handle file selection
+            function handleFile(file) {
+                const fileURL = URL.createObjectURL(file);
+                
+                // Show preview based on material type
+                switch(currentType) {
+                    case 'video':
+                        videoSource.src = fileURL;
+                        videoSource.parentElement.load();
+                        videoPreview.classList.add('show');
+                        break;
+                    case 'audio':
+                        audioSource.src = fileURL;
+                        audioSource.parentElement.load();
+                        audioPreview.classList.add('show');
+                        break;
+                    case 'document':
+                        if (file.type === 'application/pdf') {
+                            documentFrame.src = fileURL;
+                            documentPreview.classList.add('show');
+                        } else {
+                            alert('Pré-visualização disponível apenas para arquivos PDF. Seu documento foi selecionado, mas não pode ser exibido.');
+                        }
+                        break;
+                }
+            }
+            
+            // Remove buttons
+            removeVideoBtn.addEventListener('click', function() {
+                videoPreview.classList.remove('show');
+                videoSource.src = '';
+                videoSource.parentElement.load();
+            });
+            
+            removeAudioBtn.addEventListener('click', function() {
+                audioPreview.classList.remove('show');
+                audioSource.src = '';
+                audioSource.parentElement.load();
+            });
+            
+            removeDocumentBtn.addEventListener('click', function() {
+                documentPreview.classList.remove('show');
+                documentFrame.src = '';
+            });
+            
+            // Initialize
+            updateUploadHint();
+        });
+    </script>
+</body>
+</html>

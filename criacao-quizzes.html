@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criação de Quizzes e Avaliações - Ubuntu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .question-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .question-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .question-card.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(0, 80, 115, 0.05);
+        }
+        
+        .question-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .question-type.multiple {
+            background-color: rgba(0, 150, 214, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .question-type.essay {
+            background-color: rgba(88, 185, 87, 0.1);
+            color: var(--success-color);
+        }
+        
+        .selected-questions {
+            min-height: 200px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            background-color: var(--bg-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Criação de Quizzes e Avaliações</h1>
+            <a href="javascript:history.back()" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Novo Quiz/Avaliação</span>
+                            <span class="badge bg-primary">Admin/Formador</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="quizForm">
+                            <div class="mb-3">
+                                <label for="quizName" class="form-label">Nome do Quiz/Avaliação</label>
+                                <input type="text" class="form-control" id="quizName" placeholder="Ex: Quiz de JavaScript Básico">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="quizDescription" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="quizDescription" rows="3" placeholder="Descreva o objetivo deste quiz ou avaliação..."></textarea>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo</label>
+                                    <div class="d-flex">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="quizType" id="typeQuiz" value="quiz" checked>
+                                            <label class="form-check-label" for="typeQuiz">
+                                                Quiz
+                                            </label>
+                                        </div>
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input" type="radio" name="quizType" id="typeAssessment" value="assessment">
+                                            <label class="form-check-label" for="typeAssessment">
+                                                Avaliação
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="quizType" id="typeExam" value="exam">
+                                            <label class="form-check-label" for="typeExam">
+                                                Prova
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="timeLimit" class="form-label">Tempo Limite (minutos)</label>
+                                    <input type="number" class="form-control" id="timeLimit" min="0" placeholder="Deixe em branco para sem limite">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="quizCourse" class="form-label">Curso</label>
+                                <select class="form-select" id="quizCourse">
+                                    <option selected>Selecione um curso</option>
+                                    <option value="javascript">Introdução ao JavaScript</option>
+                                    <option value="python">Python para Data Science</option>
+                                    <option value="html">HTML & CSS Básico</option>
+                                    <option value="design">Design Thinking</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="randomizeQuestions">
+                                    <label class="form-check-label" for="randomizeQuestions">Randomizar ordem das perguntas</label>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mb-3">Perguntas Selecionadas</h5>
+                            <div class="selected-questions mb-3" id="selectedQuestions">
+                                <p class="text-muted text-center my-5" id="noQuestionsMessage">Nenhuma pergunta selecionada. Selecione perguntas da lista abaixo.</p>
+                                <div id="selectedQuestionsList"></div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-secondary me-md-2" id="clearBtn">Limpar</button>
+                                <button type="submit" class="btn btn-primary" id="saveBtn">Salvar Quiz</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Banco de Perguntas</span>
+                            <a href="geracao-perguntas.html" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Nova Pergunta
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Buscar perguntas..." id="searchQuestions">
+                                <button class="btn btn-outline-primary" type="button">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <select class="form-select" id="filterCategory">
+                                <option value="">Todas as categorias</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="html">HTML/CSS</option>
+                                <option value="design">Design Thinking</option>
+                                <option value="data">Data Science</option>
+                            </select>
+                        </div>
+                        
+                        <div id="questionsList">
+                            <!-- Question 1 -->
+                            <div class="question-card" data-id="1" data-type="multiple" data-category="javascript">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">Qual é a saída do seguinte código JavaScript?
+                                        <span class="question-type multiple">Múltipla Escolha</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary add-question-btn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <p class="mb-1 text-muted small">const x = 10; let y = 5; console.log(x + y);</p>
+                                <small class="text-muted">Categoria: JavaScript • Dificuldade: Médio</small>
+                            </div>
+                            
+                            <!-- Question 2 -->
+                            <div class="question-card" data-id="2" data-type="essay" data-category="javascript">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">Explique o conceito de closure em JavaScript
+                                        <span class="question-type essay">Dissertativa</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary add-question-btn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Categoria: JavaScript • Dificuldade: Difícil</small>
+                            </div>
+                            
+                            <!-- Question 3 -->
+                            <div class="question-card" data-id="3" data-type="multiple" data-category="python">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">Qual é a forma correta de criar uma lista em Python?
+                                        <span class="question-type multiple">Múltipla Escolha</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary add-question-btn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Categoria: Python • Dificuldade: Fácil</small>
+                            </div>
+                            
+                            <!-- Question 4 -->
+                            <div class="question-card" data-id="4" data-type="multiple" data-category="html">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">Qual tag HTML é usada para criar um link?
+                                        <span class="question-type multiple">Múltipla Escolha</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary add-question-btn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Categoria: HTML/CSS • Dificuldade: Fácil</small>
+                            </div>
+                            
+                            <!-- Question 5 -->
+                            <div class="question-card" data-id="5" data-type="essay" data-category="design">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">Descreva o processo de Design Thinking
+                                        <span class="question-type essay">Dissertativa</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary add-question-btn">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Categoria: Design Thinking • Dificuldade: Médio</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sucesso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-center">Quiz/Avaliação criado com sucesso!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const quizForm = document.getElementById('quizForm');
+            const clearBtn = document.getElementById('clearBtn');
+            const selectedQuestions = document.getElementById('selectedQuestions');
+            const selectedQuestionsList = document.getElementById('selectedQuestionsList');
+            const noQuestionsMessage = document.getElementById('noQuestionsMessage');
+            const addQuestionBtns = document.querySelectorAll('.add-question-btn');
+            const searchQuestions = document.getElementById('searchQuestions');
+            const filterCategory = document.getElementById('filterCategory');
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            
+            // Selected questions array
+            let selectedQuestionsArray = [];
+            
+            // Add question to selected list
+            addQuestionBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const questionCard = this.closest('.question-card');
+                    const questionId = questionCard.dataset.id;
+                    const questionType = questionCard.dataset.type;
+                    const questionTitle = questionCard.querySelector('h6').textContent.trim().split('\n')[0];
+                    
+                    // Check if question is already selected
+                    if (selectedQuestionsArray.some(q => q.id === questionId)) {
+                        alert('Esta pergunta já foi selecionada.');
+                        return;
+                    }
+                    
+                    // Add to selected questions array
+                    selectedQuestionsArray.push({
+                        id: questionId,
+                        title: questionTitle,
+                        type: questionType
+                    });
+                    
+                    // Update UI
+                    updateSelectedQuestionsList();
+                });
+            });
+            
+            // Update selected questions list
+            function updateSelectedQuestionsList() {
+                if (selectedQuestionsArray.length === 0) {
+                    noQuestionsMessage.style.display = 'block';
+                    selectedQuestionsList.innerHTML = '';
+                    return;
+                }
+                
+                noQuestionsMessage.style.display = 'none';
+                selectedQuestionsList.innerHTML = '';
+                
+                selectedQuestionsArray.forEach((question, index) => {
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'question-card';
+                    questionElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="badge bg-secondary me-2">${index + 1}</span>
+                                <span>${question.title}</span>
+                                <span class="question-type ${question.type}">${question.type === 'multiple' ? 'Múltipla Escolha' : 'Dissertativa'}</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-question-btn" data-id="${question.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    selectedQuestionsList.appendChild(questionElement);
+                    
+                    // Add event listener to remove button
+                    const removeBtn = questionElement.querySelector('.remove-question-btn');
+                    removeBtn.addEventListener('click', function() {
+                        const questionId = this.dataset.id;
+                        selectedQuestionsArray = selectedQuestionsArray.filter(q => q.id !== questionId);
+                        updateSelectedQuestionsList();
+                    });
+                });
+            }
+            
+            // Filter questions
+            searchQuestions.addEventListener('input', filterQuestions);
+            filterCategory.addEventListener('change', filterQuestions);
+            
+            function filterQuestions() {
+                const searchTerm = searchQuestions.value.toLowerCase();
+                const category = filterCategory.value;
+                
+                document.querySelectorAll('.question-card').forEach(card => {
+                    const questionTitle = card.querySelector('h6').textContent.toLowerCase();
+                    const questionCategory = card.dataset.category;
+                    
+                    const matchesSearch = questionTitle.includes(searchTerm);
+                    const matchesCategory = category === '' || questionCategory === category;
+                    
+                    if (matchesSearch && matchesCategory) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Clear form
+            clearBtn.addEventListener('click', function() {
+                quizForm.reset();
+                selectedQuestionsArray = [];
+                updateSelectedQuestionsList();
+            });
+            
+            // Save quiz
+            quizForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                const quizName = document.getElementById('quizName').value.trim();
+                if (!quizName) {
+                    alert('Por favor, insira um nome para o quiz/avaliação.');
+                    return;
+                }
+                
+                if (selectedQuestionsArray.length === 0) {
+                    alert('Por favor, selecione pelo menos uma pergunta.');
+                    return;
+                }
+                
+                // Collect form data
+                const formData = {
+                    name: quizName,
+                    description: document.getElementById('quizDescription').value,
+                    type: document.querySelector('input[name="quizType"]:checked').value,
+                    timeLimit: document.getElementById('timeLimit').value || null,
+                    course: document.getElementById('quizCourse').value,
+                    randomize: document.getElementById('randomizeQuestions').checked,
+                    questions: selectedQuestionsArray.map(q => q.id)
+                };
+                
+                // Send data to server (simulated)
+                console.log('Sending quiz data:', formData);
+                
+                // Show success modal
+                successModal.show();
+                
+                // Reset form after success
+                setTimeout(() => {
+                    clearBtn.click();
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

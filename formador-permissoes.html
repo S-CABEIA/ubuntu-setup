@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Permissões - Formador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005073; /* Azul Cisco */
+            --secondary-color: #0096D6; /* Azul secundário Cisco */
+            --accent-color: #FFFFFF; /* Branco */
+            --success-color: #58B957; /* Verde Cisco */
+            --warning-color: #F2AF00; /* Amarelo Cisco */
+            --danger-color: #E2231A; /* Vermelho Cisco */
+            --text-color: #333333;
+            --light-text: #6c757d;
+            --border-color: #e9ecef;
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --sidebar-width: 280px;
+            --header-height: 60px;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 250px;
+            max-width: 400px;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            min-width: 70px;
+            max-width: 70px;
+            resize: none;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-header {
+            padding: 10px 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link {
+            padding: 12px 25px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed .menu-header,
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            padding: 12px;
+            justify-content: center;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            margin-right: 0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        /* Header */
+        .header {
+            height: var(--header-height);
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .search-form {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+        
+        .search-form input {
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-menu .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .user-menu .dropdown-toggle::after {
+            display: none;
+        }
+        
+        .user-menu .dropdown-toggle img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            padding: 15px 20px;
+            color: var(--primary-color);
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Permissions Table */
+        .permissions-table th {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .permissions-table .role-name {
+            font-weight: 600;
+        }
+        
+        .permissions-table .form-check {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .permissions-table .form-check-input:checked {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        /* Student List */
+        .student-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        
+        .student-info {
+            flex-grow: 1;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--primary-color);
+        }
+        
+        .student-email {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .student-progress {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+        
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--success-color);
+            border-top-color: transparent;
+            transform: rotate(45deg);
+        }
+        
+        .student-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* Course Card */
+        .course-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .course-image {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .course-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .course-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .course-info {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        /* Activity Log */
+        .activity-log {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .activity-user {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .activity-time {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .activity-action {
+            margin-bottom: 5px;
+        }
+        
+        .activity-details {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                resize: none;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.pushed {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .permissions-table {
+                width: 100%;
+                overflow-x: auto;
+            }
+            
+            .student-item {
+                flex-wrap: wrap;
+            }
+            
+            .student-progress {
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .student-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <span style="color: white;">UBUNTU</span><span style="color: white;">.</span> <span style="color: white;">Formador</span>
+            </a>
+            <button class="sidebar-toggle" id="sidebar-toggle">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-header">Gestão</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="formador-dashboard.html" class="nav-link">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-book"></i> <span>Meus Cursos</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-people"></i> <span>Turmas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-person-badge"></i> <span>Alunos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Conteúdo</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="gerenciar-materiais.html" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i  class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> <span>Materiais</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-clipboard-check"></i> <span>Avaliações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-question-circle"></i> <span>Quizzes</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Comunicação</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-dots"></i> <span>Mensagens</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-chat-square-text"></i> <span>Fórum</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-megaphone"></i> <span>Anúncios</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="menu-header">Sistema</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i> <span>Configurações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="formador-permissoes.html" class="nav-link active">
+                        <i class="bi bi-shield-lock"></i> <span>Permissões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">
+                        <i class="bi bi-box-arrow-right"></i> <span>Sair</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Header -->
+        <header class="header">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <form class="search-form d-none d-md-block">
+                <input type="search" placeholder="Pesquisar alunos, cursos..." class="form-control">
+            </form>
+            
+            <div class="user-menu ms-auto">
+                <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://via.placeholder.com/36" alt="Formador">
+                    <span class="d-none d-md-inline-block">Carlos Oliveira</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Perfil</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="login.html"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                </ul>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            <h1 class="page-title">Gerenciamento de Permissões</h1>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Permissions Matrix -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Permissões de Alunos</span>
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-save me-1"></i> Salvar Alterações
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Como formador, você pode gerenciar as permissões dos alunos em seus cursos. Algumas permissões são definidas pelo administrador do sistema e não podem ser alteradas.
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table permissions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Recurso / Permissão</th>
+                                            <th class="text-center">Todos os Alunos</th>
+                                            <th class="text-center">Monitores</th>
+                                            <th class="text-center">Personalizado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Materiais -->
+                                        <tr>
+                                            <td class="role-name">Visualizar Materiais</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="role-name">Baixar Materiais</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Fórum -->
+                                        <tr>
+                                            <td class="role-name">Participar do Fórum</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="role-name">Moderar Fórum</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Avaliações -->
+                                        <tr>
+                                            <td class="role-name">Realizar Avaliações</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked disabled>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="role-name">Visualizar Notas de Outros Alunos</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Colaboração -->
+                                        <tr>
+                                            <td class="role-name">Criar Grupos de Estudo</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="role-name">Compartilhar Materiais Próprios</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Assistência -->
+                                        <tr>
+                                            <td class="role-name">Auxiliar na Correção</td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Log -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Registro de Atividades</span>
+                        </div>
+                        <div class="card-body">
+                            <ul class="activity-log">
+                                <li class="activity-item">
+                                    <div class="activity-header">
+                                        <span class="activity-user">Carlos Oliveira (Você)</span>
+                                        <span class="activity-time">Hoje, 10:45</span>
+                                    </div>
+                                    <div class="activity-action">Alterou permissões do grupo <strong>Monitores</strong></div>
+                                    <div class="activity-details">Adicionada permissão: Auxiliar na Correção</div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-header">
+                                        <span class="activity-user">Carlos Oliveira (Você)</span>
+                                        <span class="activity-time">Ontem, 14:30</span>
+                                    </div>
+                                    <div class="activity-action">Adicionou <strong>Maria Santos</strong> ao grupo de Monitores</div>
+                                    <div class="activity-details">Curso: Introdução ao JavaScript</div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-header">
+                                        <span class="activity-user">Carlos Oliveira (Você)</span>
+                                        <span class="activity-time">05/03/2025, 09:15</span>
+                                    </div>
+                                    <div class="activity-action">Criou grupo de permissões <strong>Monitores</strong></div>
+                                    <div class="activity-details">Aplicado aos cursos: Introdução ao JavaScript, Design Thinking</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Student Groups -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Grupos de Alunos</span>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newGroupModal">
+                                <i class="bi bi-plus-circle me-1"></i> Novo Grupo
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group mb-3">
+                                <a href="#" class="list-group-item list-group-item-action active">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Todos os Alunos</h6>
+                                        <span class="badge bg-light text-dark">35</span>
+                                    </div>
+                                    <p class="mb-1">Permissões padrão para todos os alunos matriculados</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Monitores</h6>
+                                        <span class="badge bg-light text-dark">5</span>
+                                    </div>
+                                    <p class="mb-1">Alunos com permissões adicionais para auxiliar no curso</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Personalizado</h6>
+                                        <span class="badge bg-light text-dark">2</span>
+                                    </div>
+                                    <p class="mb-1">Alunos com permissões específicas individuais</p>
+                                </a>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignStudentModal">
+                                    <i class="bi bi-person-plus me-2"></i>Atribuir Aluno a Grupo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Permissions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Permissões por Curso</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="courseSelect" class="form-label">Selecione um Curso</label>
+                                <select class="form-select" id="courseSelect">
+                                    <option selected>Todos os Cursos</option>
+                                    <option>Introdução ao JavaScript</option>
+                                    <option>Design Thinking</option>
+                                    <option>Python para Data Science</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="overridePermissions" checked>
+                                <label class="form-check-label" for="overridePermissions">Substituir permissões globais</label>
+                                <div class="form-text">Quando ativado, as permissões específicas do curso substituem as permissões globais.</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button class="btn btn-primary">
+                                    <i class="bi bi-gear-fill me-2"></i>Configurar Permissões do Curso
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Student List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Alunos com Permissões Especiais</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="student-list">
+                                <li class="student-item">
+                                    <img src="https://via.placeholder.com/40" alt="Student" class="student-avatar">
+                                    <div class="student-info">
+                                        <h6 class="student-name">Maria Santos</h6>
+                                        <p class="student-email">maria@email.com</p>
+                                    </div>
+                                    <div class="student-progress">
+                                        <div class="progress-circle">75%</div>
+                                    </div>
+                                    <div class="student-actions">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                                <li class="student-item">
+                                    <img src="https://via.placeholder.com/40" alt="Student" class="student-avatar">
+                                    <div class="student-info">
+                                        <h6 class="student-name">João Silva</h6>
+                                        <p class="student-email">joao@email.com</p>
+                                    </div>
+                                    <div class="student-progress">
+                                        <div class="progress-circle">90%</div>
+                                    </div>
+                                    <div class="student-actions">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                                <li class="student-item">
+                                    <img src="https://via.placeholder.com/40" alt="Student" class="student-avatar">
+                                    <div class="student-info">
+                                        <h6 class="student-name">Ana Oliveira</h6>
+                                        <p class="student-email">ana@email.com</p>
+                                    </div>
+                                    <div class="student-progress">
+                                        <div class="progress-circle">60%</div>
+                                    </div>
+                                    <div class="student-actions">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Group Modal -->
+    <div class="modal fade" id="newGroupModal" tabindex="-1" aria-labelledby="newGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newGroupModalLabel">Criar Novo Grupo de Alunos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="groupName" class="form-label">Nome do Grupo</label>
+                            <input type="text" class="form-control" id="groupName" placeholder="Ex: Grupo Avançado">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="groupDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="groupDescription" rows="3" placeholder="Descreva o propósito deste grupo..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="courseApply" class="form-label">Aplicar ao Curso</label>
+                            <select class="form-select" id="courseApply">
+                                <option selected>Todos os Cursos</option>
+                                <option>Introdução ao JavaScript</option>
+                                <option>Design Thinking</option>
+                                <option>Python para Data Science</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="baseGroup" class="form-label">Baseado no Grupo</label>
+                            <select class="form-select" id="baseGroup">
+                                <option selected>Todos os Alunos</option>
+                                <option>Monitores</option>
+                                <option>Personalizado</option>
+                            </select>
+                            <div class="form-text">As permissões iniciais serão copiadas do grupo selecionado.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Criar Grupo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assign Student Modal -->
+    <div class="modal fade" id="assignStudentModal" tabindex="-1" aria-labelledby="assignStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignStudentModalLabel">Atribuir Aluno a Grupo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="studentSelect" class="form-label">Selecionar Aluno</label>
+                            <select class="form-select" id="studentSelect">
+                                <option selected disabled>Escolha um aluno</option>
+                                <option>Ricardo Almeida</option>
+                                <option>Pedro Santos</option>
+                                <option>Juliana Costa</option>
+                                <option>Marcos Oliveira</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="groupSelect" class="form-label">Atribuir ao Grupo</label>
+                            <select class="form-select" id="groupSelect">
+                                <option selected disabled>Escolha um grupo</option>
+                                <option>Todos os Alunos</option>
+                                <option>Monitores</option>
+                                <option>Personalizado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="courseAssign" class="form-label">Aplicar ao Curso</label>
+                            <select class="form-select" id="courseAssign">
+                                <option selected>Todos os Cursos</option>
+                                <option>Introdução ao JavaScript</option>
+                                <option>Design Thinking</option>
+                                <option>Python para Data Science</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Atribuir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Sidebar
+            document.getElementById('toggle-sidebar-btn').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('show');
+                document.getElementById('sidebar-overlay').classList.toggle('show');
+            });
+            
+            // Close sidebar when clicking overlay
+            document.getElementById('sidebar-overlay').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('show');
+                document.getElementById('sidebar-overlay').classList.remove('show');
+            });
+            
+            // Sidebar Toggle Button
+            document.getElementById('sidebar-toggle').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('main-content');
+                
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+        });
+    </script>
+</body>
+</html>
